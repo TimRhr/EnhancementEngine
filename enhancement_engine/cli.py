@@ -3,14 +3,15 @@ import argparse
 import os
 from typing import List, Optional
 
+from .utils import load_lines, validate_email
+
 from .core.engine import EnhancementEngine
 
 
 def _parse_gene_list(value: str) -> List[str]:
     """Parse gene list from comma-separated string or file path."""
     if os.path.isfile(value):
-        with open(value, "r", encoding="utf-8") as fh:
-            return [line.strip() for line in fh if line.strip()]
+        return [line.strip() for line in load_lines(value) if line.strip()]
     return [v.strip() for v in value.split(",") if v.strip()]
 
 
@@ -44,6 +45,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[List[str]] = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    validate_email(args.email)
 
     if args.command == "analyze":
         engine = EnhancementEngine(args.email)
