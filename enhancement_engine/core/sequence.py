@@ -19,8 +19,16 @@ import numpy as np
 try:
     from Bio.Seq import Seq
     from Bio.SeqRecord import SeqRecord
-    from Bio.SeqUtils import GC, molecular_weight
     from Bio import SeqIO
+
+    try:  # BioPython <1.78 provided GC directly
+        from Bio.SeqUtils import GC, molecular_weight
+    except ImportError:  # BioPython >=1.78 moved GC -> gc_fraction
+        from Bio.SeqUtils import gc_fraction, molecular_weight
+
+        def GC(seq) -> float:
+            """Return GC percentage for *seq* as a float."""
+            return gc_fraction(seq) * 100
 except ImportError:
     raise ImportError("BioPython is required. Install with: pip install biopython")
 

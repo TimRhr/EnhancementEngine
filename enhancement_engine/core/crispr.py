@@ -19,7 +19,15 @@ import itertools
 try:
     from Bio.Seq import Seq
     from Bio.SeqRecord import SeqRecord
-    from Bio.SeqUtils import GC
+
+    try:  # Older BioPython
+        from Bio.SeqUtils import GC
+    except ImportError:  # Newer BioPython versions
+        from Bio.SeqUtils import gc_fraction
+
+        def GC(seq) -> float:
+            """Return GC percentage for *seq* as a float."""
+            return gc_fraction(seq) * 100
 except ImportError:
     raise ImportError("BioPython is required. Install with: pip install biopython")
 

@@ -79,11 +79,12 @@ class EnhancementEngine:
             project_name="Enhancement Analysis", researcher_email=email
         )
 
+        # Setup logging early so component init can use it
+        self.logger = logging.getLogger(__name__)
+
         # Initialize all analysis components
         self._initialize_components()
 
-        # Setup logging
-        self.logger = logging.getLogger(__name__)
         self.logger.info(f"Enhancement Engine initialized for {email}")
 
         # Analysis cache for performance
