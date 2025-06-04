@@ -137,7 +137,7 @@ This tool is designed for **research and educational purposes**. Any practical a
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for code style, testing instructions and the pull request workflow.
 
 ### Development Setup
 ```bash
