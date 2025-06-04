@@ -114,6 +114,7 @@ cython_debug/
 # Enhancement Engine specific
 data/cached_sequences/
 data/temp/
+data/cache/
 *.log
 config.ini
 .secrets
