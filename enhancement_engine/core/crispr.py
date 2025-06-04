@@ -657,14 +657,18 @@ class CRISPRDesigner:
         """Extract guide sequence based on PAM position and Cas type."""
         pam_pos = pam_site.position
         
-        if self.cas_info["pam_position"] == "3prime":
+        pam_position = self.pam_finder.pam_info.get("position")
+
+        if pam_position == "3prime":
             # Guide is upstream of PAM (e.g., Cas9)
             guide_start = pam_pos - self.guide_length
             guide_end = pam_pos
-        else:
+        elif pam_position == "5prime":
             # Guide is downstream of PAM (e.g., Cas12a)
             guide_start = pam_pos + len(pam_site.sequence)
             guide_end = guide_start + self.guide_length
+        else:
+            return None
         
         if guide_start < 0 or guide_end > len(sequence):
             return None
