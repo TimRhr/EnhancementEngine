@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Analysis Result</title>
+</head>
+<body>
+    <h1>Analysis Result</h1>
+    <p>Gene: {{ report.gene_name }}</p>
+    <p>Feasibility: {{ report.feasibility_score }}</p>
+    <p>Safety score: {{ report.safety_assessment.overall_score }}</p>
+    <p>Predicted improvement: {{ report.predicted_effect.enhancement_gain.improvement_factor }}x</p>
+    <p><a href="{{ url_for('index') }}">Analyze another gene</a></p>
+</body>
+</html>

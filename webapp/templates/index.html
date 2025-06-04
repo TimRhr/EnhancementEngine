@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Enhancement Engine</title>
+</head>
+<body>
+    <h1>Gene Analysis</h1>
+    {% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+    <form action="{{ url_for('analyze') }}" method="post">
+        <label for="gene">Gene:</label>
+        <input type="text" name="gene" id="gene">
+        <label for="variant">Variant:</label>
+        <input type="text" name="variant" id="variant">
+        <button type="submit">Analyze</button>
+    </form>
+</body>
+</html>
