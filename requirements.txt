@@ -33,3 +33,4 @@ flake8>=5.0.0
 # Optional: Deep learning (for advanced predictions)
 # torch>=1.12.0
 # tensorflow>=2.10.0
+Flask>=2.3
