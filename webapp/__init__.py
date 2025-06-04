@@ -25,5 +25,5 @@ def analyze() -> str:
     report = engine.analyze_gene(gene, variant)
     return render_template("result.html", report=report)
 
-
-__all__ = ["app"]
+  if __name__ == "__main__":
+    app.run()

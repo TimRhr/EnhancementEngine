@@ -39,6 +39,7 @@ setup(
     entry_points={
         "console_scripts": [
             "enhancement-engine=enhancement_engine.cli:main",
+            "enhancement-engine-web=webapp.run:main",
         ],
     },
     include_package_data=True,
