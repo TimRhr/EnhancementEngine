@@ -108,6 +108,20 @@ enhancement-engine batch COMT,BDNF,ACTN3 -e your.email@domain.com
 enhancement-engine cache stats -e your.email@domain.com
 ```
 
+### Web Interface
+
+An optional web-based UI built with [Flask](https://flask.palletsprojects.com/) is included.
+Install the extra dependency and launch the app:
+
+```bash
+pip install Flask
+python examples/webapp.py
+```
+
+The server runs on `http://127.0.0.1:5000/`. POST a JSON payload with `gene` and
+`variant` to `/analyze` to retrieve an analysis report. A brief walkthrough is
+available in [docs/webapp_guide.md](docs/webapp_guide.md).
+
 ## 🧬 Supported Enhancement Genes
 
 | Gene | Function | Enhancement Type |
