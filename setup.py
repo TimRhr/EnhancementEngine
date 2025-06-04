@@ -30,7 +30,7 @@ setup(
         "Topic :: Scientific/Engineering :: Medical Science Apps.",
     ],
     python_requires=">=3.8",
-    install_requires=requirements,
+    install_requires=requirements + ["Flask"],
     extras_require={
         "dev": ["pytest", "pytest-cov", "black", "flake8"],
         "ml": ["torch", "tensorflow"],
