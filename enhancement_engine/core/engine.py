@@ -12,10 +12,18 @@ integrating all components:
 """
 
 import logging
-import json
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union, Any
 from pathlib import Path
+
+from ..utils import (
+    save_json,
+    load_json,
+    save_csv,
+    save_text,
+    is_valid_email,
+    current_timestamp,
+)
 
 from .database import GeneDatabase
 from .sequence import SequenceAnalyzer
@@ -57,7 +65,7 @@ class EnhancementEngine:
             email: Email address for NCBI access (required)
             config: Optional project configuration
         """
-        if not email or "@" not in email:
+        if not is_valid_email(email):
             raise EnhancementEngineError(ERROR_MESSAGES["invalid_email"])
         
         self.email = email
@@ -780,8 +788,7 @@ class EnhancementEngine:
                     }
                 project_data['analysis_cache'] = serializable_cache
             
-            with open(filename, 'w') as f:
-                json.dump(project_data, f, indent=2)
+            save_json(project_data, filename)
             
             self.logger.info(f"Project saved to {filename}")
             
@@ -797,8 +804,7 @@ class EnhancementEngine:
             filename: Input filename
         """
         try:
-            with open(filename, 'r') as f:
-                project_data = json.load(f)
+            project_data = load_json(filename)
             
             # Update configuration
             if 'config' in project_data:
@@ -1034,7 +1040,7 @@ class EnhancementEngine:
             if not self._analysis_cache:
                 raise EnhancementEngineError("No analysis results to export")
             
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = current_timestamp()
             
             if output_format.lower() == 'json':
                 # Export as JSON
@@ -1060,48 +1066,40 @@ class EnhancementEngine:
                     }
                 
                 output_filename = filename or f"enhancement_results_{timestamp}.json"
-                with open(output_filename, 'w') as f:
-                    json.dump(export_data, f, indent=2)
+                save_json(export_data, output_filename)
                 
                 return output_filename
             
             elif output_format.lower() == 'csv':
                 # Export as CSV
-                import csv
-                
                 output_filename = filename or f"enhancement_results_{timestamp}.csv"
-                
-                with open(output_filename, 'w', newline='') as f:
-                    writer = csv.writer(f)
-                    
-                    # Header
-                    writer.writerow([
-                        'Gene', 'Variant', 'Feasibility_Score', 'Safety_Score',
-                        'Enhancement_Factor', 'Confidence', 'Category', 'Summary'
-                    ])
-                    
-                    # Data rows
-                    for key, report in self._analysis_cache.items():
-                        writer.writerow([
-                            report.gene_name,
-                            report.target_variant,
-                            f"{report.feasibility_score:.1f}",
-                            f"{report.safety_assessment.overall_score:.1f}",
-                            f"{report.predicted_effect.enhancement_gain.improvement_factor:.2f}",
-                            f"{report.confidence_score:.2f}",
-                            report.predicted_effect.enhancement_gain.category.value,
-                            report.summary
-                        ])
+
+                rows = []
+                for key, report in self._analysis_cache.items():
+                    rows.append({
+                        'Gene': report.gene_name,
+                        'Variant': report.target_variant,
+                        'Feasibility_Score': f"{report.feasibility_score:.1f}",
+                        'Safety_Score': f"{report.safety_assessment.overall_score:.1f}",
+                        'Enhancement_Factor': f"{report.predicted_effect.enhancement_gain.improvement_factor:.2f}",
+                        'Confidence': f"{report.confidence_score:.2f}",
+                        'Category': report.predicted_effect.enhancement_gain.category.value,
+                        'Summary': report.summary,
+                    })
+
+                save_csv(rows, output_filename, [
+                    'Gene', 'Variant', 'Feasibility_Score', 'Safety_Score',
+                    'Enhancement_Factor', 'Confidence', 'Category', 'Summary'
+                ])
                 
                 return output_filename
             
             elif output_format.lower() == 'html':
                 # Export as HTML report
                 html_content = self._generate_html_report()
-                
+
                 output_filename = filename or f"enhancement_report_{timestamp}.html"
-                with open(output_filename, 'w') as f:
-                    f.write(html_content)
+                save_text(html_content, output_filename)
                 
                 return output_filename
             

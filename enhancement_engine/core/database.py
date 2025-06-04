@@ -18,6 +18,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import logging
 
+from ..utils import is_valid_email
+
 try:
     from Bio import Entrez, SeqIO
     from Bio.Seq import Seq
@@ -146,7 +148,7 @@ class NCBIClient:
             api_key: NCBI API key (optional, increases rate limit)
             request_delay: Delay between requests in seconds
         """
-        if not email or "@" not in email:
+        if not is_valid_email(email):
             raise ValueError(ERROR_MESSAGES["invalid_email"])
         
         Entrez.email = email
