@@ -15,7 +15,7 @@ pip install Flask
 A small example application is provided in the `examples` folder. Start it with:
 
 ```bash
-python examples/webapp.py
+python webapp/run.py
 ```
 
 Once the server is running, open `http://127.0.0.1:5000/` in your browser to
