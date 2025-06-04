@@ -118,9 +118,10 @@ pip install Flask
 python examples/webapp.py
 ```
 
-The server runs on `http://127.0.0.1:5000/`. POST a JSON payload with `gene` and
-`variant` to `/analyze` to retrieve an analysis report. A brief walkthrough is
-available in [docs/webapp_guide.md](docs/webapp_guide.md).
+The server runs on `http://127.0.0.1:5000/`. Open this URL in a browser to use
+the HTML form or POST a JSON payload with `gene` and `variant` to `/analyze` to
+retrieve an analysis report. A brief walkthrough is available in
+[docs/webapp_guide.md](docs/webapp_guide.md).
 
 ## 🧬 Supported Enhancement Genes
 
