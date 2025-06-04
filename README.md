@@ -89,6 +89,25 @@ print(f"Efficiency: {best_guide.efficiency_score}")
 print(f"Safety: {best_guide.specificity_score}")
 ```
 
+### Command-Line Interface
+
+Enhancement Engine also provides a console entry point named
+`enhancement-engine`. Some example commands are shown below:
+
+```bash
+# Show available commands
+enhancement-engine --help
+
+# Analyze a single gene
+enhancement-engine analyze COMT -e your.email@domain.com
+
+# Analyze multiple genes at once
+enhancement-engine batch COMT,BDNF,ACTN3 -e your.email@domain.com
+
+# Inspect cached data statistics
+enhancement-engine cache stats -e your.email@domain.com
+```
+
 ## 🧬 Supported Enhancement Genes
 
 | Gene | Function | Enhancement Type |
