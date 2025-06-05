@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>🧬 Analysis Results - Enhancement Engine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+        .results-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-top: -1rem;
+            position: relative;
+            z-index: 1;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #6c757d;
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .metric-card.excellent { border-left-color: #28a745; }
+        .metric-card.good { border-left-color: #17a2b8; }
+        .metric-card.moderate { border-left-color: #ffc107; }
+        .metric-card.poor { border-left-color: #dc3545; }
+        
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+        .score-excellent { background: linear-gradient(135deg, #28a745, #20c997); }
+        .score-good { background: linear-gradient(135deg, #17a2b8, #6f42c1); }
+        .score-moderate { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+        .score-poor { background: linear-gradient(135deg, #dc3545, #e83e8c); }
+        
+        .recommendation-item {
+            background: #e7f3ff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #0d6efd;
+        }
+        
+        .warning-item {
+            background: #fff3cd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #ffc107;
+        }
+        
+        .progress-custom {
+            height: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container text-center">
+            <h1 class="h2 fw-bold mb-2">
+                <i class="fas fa-chart-line me-2"></i>Analysis Results
+            </h1>
+            <p class="mb-0">{{ gene }} - {{ variant }}</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="results-container">
+                    
+                    <!-- Gene Summary -->
+                    <div class="text-center mb-4">
+                        <h2 class="h3 text-primary">{{ report.gene_name }}</h2>
+                        <p class="text-muted">Variant: {{ report.target_variant }}</p>
+                        <p class="lead">{{ report.summary }}</p>
+                    </div>
+
+                    <!-- Key Metrics -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="metric-card text-center 
+                                {% if report.feasibility_score >= 80 %}excellent
+                                {% elif report.feasibility_score >= 60 %}good
+                                {% elif report.feasibility_score >= 40 %}moderate
+                                {% else %}poor{% endif %}">
+                                <div class="score-circle 
+                                    {% if report.feasibility_score >= 80 %}score-excellent
+                                    {% elif report.feasibility_score >= 60 %}score-good
+                                    {% elif report.feasibility_score >= 40 %}score-moderate
+                                    {% else %}score-poor{% endif %}">
+                                    {{ "%.0f"|format(report.feasibility_score) }}
+                                </div>
+                                <h6><i class="fas fa-cogs me-1"></i>Feasibility</h6>
+                                <small class="text-muted">Overall viability score</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="metric-card text-center 
+                                {% if report.safety_assessment.overall_score >= 80 %}excellent
+                                {% elif report.safety_assessment.overall_score >= 60 %}good
+                                {% elif report.safety_assessment.overall_score >= 40 %}moderate
+                                {% else %}poor{% endif %}">
+                                <div class="score-circle 
+                                    {% if report.safety_assessment.overall_score >= 80 %}score-excellent
+                                    {% elif report.safety_assessment.overall_score >= 60 %}score-good
+                                    {% elif report.safety_assessment.overall_score >= 40 %}score-moderate
+                                    {% else %}score-poor{% endif %}">
+                                    {{ "%.0f"|format(report.safety_assessment.overall_score) }}
+                                </div>
+                                <h6><i class="fas fa-shield-alt me-1"></i>Safety</h6>
+                                <small class="text-muted">Risk assessment score</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="metric-card text-center 
+                                {% if report.predicted_effect.enhancement_gain.improvement_factor >= 2.0 %}excellent
+                                {% elif report.predicted_effect.enhancement_gain.improvement_factor >= 1.5 %}good
+                                {% elif report.predicted_effect.enhancement_gain.improvement_factor >= 1.2 %}moderate
+                                {% else %}poor{% endif %}">
+                                <div class="score-circle 
+                                    {% if report.predicted_effect.enhancement_gain.improvement_factor >= 2.0 %}score-excellent
+                                    {% elif report.predicted_effect.enhancement_gain.improvement_factor >= 1.5 %}score-good
+                                    {% elif report.predicted_effect.enhancement_gain.improvement_factor >= 1.2 %}score-moderate
+                                    {% else %}score-poor{% endif %}">
+                                    {{ "%.1f"|format(report.predicted_effect.enhancement_gain.improvement_factor) }}x
+                                </div>
+                                <h6><i class="fas fa-arrow-up me-1"></i>Enhancement</h6>
+                                <small class="text-muted">Improvement factor</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <div class="metric-card text-center 
+                                {% if report.confidence_score >= 0.8 %}excellent
+                                {% elif report.confidence_score >= 0.6 %}good
+                                {% elif report.confidence_score >= 0.4 %}moderate
+                                {% else %}poor{% endif %}">
+                                <div class="score-circle 
+                                    {% if report.confidence_score >= 0.8 %}score-excellent
+                                    {% elif report.confidence_score >= 0.6 %}score-good
+                                    {% elif report.confidence_score >= 0.4 %}score-moderate
+                                    {% else %}score-poor{% endif %}">
+                                    {{ "%.0f"|format(report.confidence_score * 100) }}%
+                                </div>
+                                <h6><i class="fas fa-chart-bar me-1"></i>Confidence</h6>
+                                <small class="text-muted">Analysis confidence</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CRISPR Guide Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-cut me-2"></i>Best CRISPR Guide</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Sequence:</strong> <code>{{ report.best_guide.sequence }}</code></p>
+                                    <p><strong>Efficiency:</strong> {{ "%.2f"|format(report.best_guide.efficiency_score.overall_efficiency) }}</p>
+                                    <p><strong>GC Content:</strong> {{ "%.1f"|format(report.best_guide.gc_content) }}%</p>
+                                    <p><strong>Off-targets:</strong> {{ report.best_guide.off_targets|length }}</p>
+                                    
+                                    <!-- Efficiency Progress Bar -->
+                                    <div class="mb-2">
+                                        <small class="text-muted">Guide Efficiency</small>
+                                        <div class="progress progress-custom">
+                                            <div class="progress-bar 
+                                                {% if report.best_guide.efficiency_score.overall_efficiency >= 0.8 %}bg-success
+                                                {% elif report.best_guide.efficiency_score.overall_efficiency >= 0.6 %}bg-info
+                                                {% elif report.best_guide.efficiency_score.overall_efficiency >= 0.4 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ (report.best_guide.efficiency_score.overall_efficiency * 100)|round }}%">
+                                                {{ "%.0f"|format(report.best_guide.efficiency_score.overall_efficiency * 100) }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5><i class="fas fa-dna me-2"></i>Enhancement Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Category:</strong> {{ report.predicted_effect.enhancement_gain.category.value|title }}</p>
+                                    <p><strong>Primary Metric:</strong> {{ report.predicted_effect.enhancement_gain.primary_metric|title }}</p>
+                                    <p><strong>Baseline Value:</strong> {{ "%.1f"|format(report.predicted_effect.enhancement_gain.baseline_value) }}</p>
+                                    <p><strong>Enhanced Value:</strong> {{ "%.1f"|format(report.predicted_effect.enhancement_gain.enhanced_value) }}</p>
+                                    
+                                    <!-- Enhancement Progress -->
+                                    <div class="mb-2">
+                                        <small class="text-muted">Enhancement Potential</small>
+                                        <div class="progress progress-custom">
+                                            <div class="progress-bar 
+                                                {% if report.predicted_effect.enhancement_gain.improvement_factor >= 2.0 %}bg-success
+                                                {% elif report.predicted_effect.enhancement_gain.improvement_factor >= 1.5 %}bg-info
+                                                {% elif report.predicted_effect.enhancement_gain.improvement_factor >= 1.2 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                role="progressbar" 
+                                                style="width: {{ ((report.predicted_effect.enhancement_gain.improvement_factor - 1) * 100)|round }}%">
+                                                {{ "%.1f"|format(report.predicted_effect.enhancement_gain.improvement_factor) }}x
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    {% if report.recommendations %}
+                    <div class="mb-4">
+                        <h4><i class="fas fa-lightbulb me-2 text-primary"></i>Recommendations</h4>
+                        {% for recommendation in report.recommendations %}
+                        <div class="recommendation-item">
+                            <i class="fas fa-check-circle me-2 text-primary"></i>{{ recommendation }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Warnings -->
+                    {% if report.warnings %}
+                    <div class="mb-4">
+                        <h4><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Important Warnings</h4>
+                        {% for warning in report.warnings %}
+                        <div class="warning-item">
+                            <i class="fas fa-exclamation-circle me-2 text-warning"></i>{{ warning }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Safety Reminder -->
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Remember:</strong> This analysis is for research and educational purposes only. 
+                        Any practical application requires extensive testing, ethical review, and regulatory approval.
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="text-center">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                            <i class="fas fa-arrow-left me-2"></i>Analyze Another Gene
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-print me-2"></i>Print Results
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
