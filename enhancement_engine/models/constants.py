@@ -148,11 +148,11 @@ NCBI_DATABASES = {
 # Default analysis parameters
 DEFAULT_PARAMETERS = {
     "guide_design": {
-        "max_off_targets": 10,
+        "max_off_targets": 15,
         "min_efficiency_score": 0.3,
         "gc_content_range": (20, 80),
         "avoid_repeats": True,
-        "max_mismatches": 6
+        "max_mismatches": 4
     },
     "safety_analysis": {
         "essential_genes_weight": 2.0,
