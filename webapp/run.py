@@ -1,53 +1,88 @@
 #!/usr/bin/env python3
 """
-Run script for Enhancement Engine Web Application.
-
-This script starts the Flask development server for the Enhancement Engine
-web interface.
+Enhanced Flask application runner for Enhancement Engine.
+Optimized for Docker deployment with proper configuration management.
 """
 
 import os
 import sys
+import logging
+from pathlib import Path
+
+# Add the project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from webapp import app
 
+def setup_logging():
+    """Configure logging for the application."""
+    log_level = os.getenv('LOG_LEVEL', 'INFO').upper()
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    
+    # Create logs directory if it doesn't exist
+    log_dir = Path('/app/logs')
+    log_dir.mkdir(exist_ok=True)
+    
+    logging.basicConfig(
+        level=getattr(logging, log_level),
+        format=log_format,
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler(log_dir / 'enhancement_engine.log')
+        ]
+    )
+
+def configure_app():
+    """Configure Flask application settings."""
+    # Basic Flask configuration
+    app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    app.config['TESTING'] = False
+    
+    # Security configuration
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
+    
+    # Enhancement Engine specific configuration
+    app.config['DEMO_EMAIL'] = os.getenv('DEMO_EMAIL', 'demo@example.com')
+    app.config['CACHE_ENABLED'] = os.getenv('CACHE_ENABLED', 'true').lower() == 'true'
+    app.config['CACHE_DIR'] = os.getenv('CACHE_DIR', '/app/data/cache')
+    
+    # Ensure cache directory exists
+    Path(app.config['CACHE_DIR']).mkdir(parents=True, exist_ok=True)
+    
+    return app
+
 def main():
-    """Start the Flask development server."""
-    print("🧬 Starting Enhancement Engine Web Application...")
-    print("=" * 50)
-    print("Application will be available at:")
-    print("📍 http://127.0.0.1:5000/")
-    print("📍 http://localhost:5000/")
-    print("=" * 50)
-    print("💡 Available endpoints:")
-    print("   GET  /           - Analysis form")
-    print("   POST /analyze    - Run analysis")
-    print("   POST /api/analyze - JSON API endpoint")
-    print("   GET  /health     - Health check")
-    print("=" * 50)
-    print("⚠️  Safety Notice:")
-    print("   This tool is for research and educational purposes only.")
-    print("   Any practical application requires proper ethical review,")
-    print("   safety testing, and regulatory approval.")
-    print("=" * 50)
+    """Main function to run the Flask application."""
+    setup_logging()
+    
+    logger = logging.getLogger(__name__)
+    logger.info("Starting Enhancement Engine Web Application")
+    
+    # Configure the application
+    app = configure_app()
+    
+    # Get host and port from environment variables
+    host = os.getenv('FLASK_HOST', '0.0.0.0')
+    port = int(os.getenv('FLASK_PORT', 5000))
+    debug = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
+    
+    logger.info(f"Starting server on {host}:{port}")
+    logger.info(f"Debug mode: {debug}")
+    logger.info(f"Demo email: {app.config['DEMO_EMAIL']}")
+    logger.info(f"Cache enabled: {app.config['CACHE_ENABLED']}")
     
     try:
-        # Set debug mode based on environment
-        debug_mode = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
-        
-        # Start the Flask app
+        # Run the Flask application
         app.run(
-            host='127.0.0.1',
-            port=5000,
-            debug=debug_mode,
-            use_reloader=debug_mode,
-            threaded=True
+            host=host,
+            port=port,
+            debug=debug,
+            threaded=True,
+            use_reloader=False  # Disable reloader in production
         )
-        
-    except KeyboardInterrupt:
-        print("\n🛑 Application stopped by user")
-        sys.exit(0)
     except Exception as e:
-        print(f"\n❌ Error starting application: {e}")
+        logger.error(f"Failed to start application: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
