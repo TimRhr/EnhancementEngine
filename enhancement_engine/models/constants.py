@@ -14,7 +14,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "Val158Met",
             "enhancement_effect": "Improved working memory and stress performance",
             "ncbi_id": "1312",
-            "refseq_id": "NM_000754.4"
+            "refseq_id": "NM_000754.3"
         },
         "BDNF": {
             "full_name": "Brain-Derived Neurotrophic Factor", 
@@ -23,7 +23,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "Val66Met", 
             "enhancement_effect": "Enhanced learning and memory consolidation",
             "ncbi_id": "627",
-            "refseq_id": "NM_170731.5"
+            "refseq_id": "NM_170735.6"
         },
         "CACNA1C": {
             "full_name": "Calcium Voltage-Gated Channel Subunit Alpha1 C",
@@ -32,7 +32,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "rs1006737",
             "enhancement_effect": "Improved memory formation",
             "ncbi_id": "775",
-            "refseq_id": "NM_000719.7"
+            "refseq_id": "NM_000719.8"
         }
     },
     "physical": {
@@ -43,7 +43,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "R577X",
             "enhancement_effect": "Enhanced power and sprint performance",
             "ncbi_id": "89",
-            "refseq_id": "NM_001104.3"
+            "refseq_id": "NM_001104.4"
         },
         "MSTN": {
             "full_name": "Myostatin",
@@ -52,7 +52,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "loss_of_function",
             "enhancement_effect": "Increased muscle mass and strength", 
             "ncbi_id": "2660",
-            "refseq_id": "NM_005259.3"
+            "refseq_id": "NM_005259.4"  
         },
         "EPO": {
             "full_name": "Erythropoietin",
@@ -61,7 +61,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "overexpression",
             "enhancement_effect": "Enhanced oxygen delivery and endurance",
             "ncbi_id": "2056", 
-            "refseq_id": "NM_000799.4"
+            "refseq_id": "NM_000799.3"  
         }
     },
     "longevity": {
@@ -72,7 +72,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "rs2802292",
             "enhancement_effect": "Extended lifespan and healthspan",
             "ncbi_id": "2309",
-            "refseq_id": "NM_001455.4"
+            "refseq_id": "NM_001455.3"  
         },
         "APOE": {
             "full_name": "Apolipoprotein E", 
@@ -81,7 +81,7 @@ ENHANCEMENT_GENES = {
             "enhancement_variant": "E2_variant", 
             "enhancement_effect": "Reduced Alzheimer's risk and cardiovascular protection",
             "ncbi_id": "348",
-            "refseq_id": "NM_000041.4"
+            "refseq_id": "NM_000041.3"  
         }
     }
 }
@@ -148,11 +148,11 @@ NCBI_DATABASES = {
 # Default analysis parameters
 DEFAULT_PARAMETERS = {
     "guide_design": {
-        "max_off_targets": 5,
-        "min_efficiency_score": 0.5,
-        "gc_content_range": (30, 70),
+        "max_off_targets": 10,
+        "min_efficiency_score": 0.3,
+        "gc_content_range": (20, 80),
         "avoid_repeats": True,
-        "max_mismatches": 4
+        "max_mismatches": 6
     },
     "safety_analysis": {
         "essential_genes_weight": 2.0,

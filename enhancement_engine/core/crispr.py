@@ -189,17 +189,30 @@ class GuideEfficiencyScorer:
         guide = guide_sequence.upper()
         
         # GC content penalty (optimal range: 40-60%)
-        gc_content = GC(Seq(guide))
-        if gc_content < 30 or gc_content > 80:
-            score *= 0.5
-        elif gc_content < 40 or gc_content > 60:
-            score *= 0.8
+        try:
+            gc_content = GC(Seq(guide))
+            if gc_content < 30 or gc_content > 80:
+                score *= 0.5
+            elif gc_content < 40 or gc_content > 60:
+                score *= 0.8
+        except Exception:
+            # Fallback GC calculation
+            gc_count = guide.count('G') + guide.count('C')
+            gc_content = (gc_count / len(guide)) * 100
+            if gc_content < 30 or gc_content > 80:
+                score *= 0.5
+            elif gc_content < 40 or gc_content > 60:
+                score *= 0.8
         
         # Poly-nucleotide stretches penalty
+        # FIX: Verhindere max() auf leerer Liste
         for base in 'ATCG':
-            max_stretch = max(len(m.group()) for m in re.finditer(f'{base}+', guide))
-            if max_stretch >= 4:
-                score *= 0.7 ** (max_stretch - 3)
+            matches = list(re.finditer(f'{base}+', guide))
+            if matches:  # KRITISCHE ÄNDERUNG: Prüfe ob matches existieren
+                max_stretch = max(len(m.group()) for m in matches)
+                if max_stretch >= 4:
+                    score *= 0.7 ** (max_stretch - 3)
+            # Wenn keine matches: max_stretch = 0, keine Penalty
         
         # Position-specific nucleotide preferences
         position_weights = {
