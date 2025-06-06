@@ -22,7 +22,7 @@ class DiseaseDatabaseClient:
         email: str,
         cache_dir: str = "data/cache/disease_db",
         api_key: Optional[str] = None,
-        request_delay: float = 0.34,
+        request_delay: float = 0.4,
     ):
         if Entrez is None:
             raise ImportError("Biopython is required for DiseaseDatabaseClient")
