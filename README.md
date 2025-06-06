@@ -123,6 +123,26 @@ the HTML form or POST a JSON payload with `gene` and `variant` to `/analyze` to
 retrieve an analysis report. A brief walkthrough is available in
 [docs/webapp_guide.md](docs/webapp_guide.md).
 
+## 🩺 Therapeutic Engine
+
+The project also includes a therapeutic pipeline aimed at disease correction.
+The `TherapeuticEnhancementEngine` integrates risk assessment, CRISPR design and
+clinical safety modules.
+
+### CLI Usage
+
+Run a therapeutic analysis from the command line with:
+
+```bash
+enhancement-engine therapeutic PTPN22 --variant R620W \
+    --disease rheumatoid_arthritis -e you@example.com
+```
+
+### Webapp
+
+Start the Flask app and navigate to `/therapeutic` for an HTML form or POST JSON
+to `/api/therapeutic`.
+
 ## 🧬 Supported Enhancement Genes
 
 | Gene | Function | Enhancement Type |
@@ -175,6 +195,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [User Guide](docs/user_guide.md)
 - [API Reference](docs/api_reference.md)
+- [Therapeutic Engine](docs/therapeutic_engine.md)
 - [Examples](examples/)
 - [FAQ](docs/faq.md)
 
