@@ -62,13 +62,15 @@
     <form method="post">
         <div class="mb-3">
             <label for="disease" class="form-label">Disease</label>
-            <div class="input-group">
-                <input list="disease-list" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
-                <button type="button" class="btn btn-outline-secondary" id="search-disease">
-                    <i class="fas fa-search"></i>
-                </button>
+            <div class="dropdown">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
+                    <button type="button" class="btn btn-outline-secondary" id="search-disease" data-bs-toggle="dropdown">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <ul class="dropdown-menu" id="disease-results"></ul>
             </div>
-            <datalist id="disease-list"></datalist>
             <button type="button" id="confirm-disease" class="btn btn-secondary mt-2">
                 Load Disease Info
             </button>
@@ -111,19 +113,27 @@
     }
 
     async function updateDiseaseList(query) {
-        const list = document.getElementById('disease-list');
-        list.innerHTML = '';
+        const menu = document.getElementById('disease-results');
+        menu.innerHTML = '';
         const diseases = await fetchDiseases(query);
-        diseases.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d;
-            list.appendChild(opt);
-        });
         const diseaseInput = document.getElementById('disease');
-        if (document.activeElement === diseaseInput) {
-            diseaseInput.blur();
-            diseaseInput.focus();
-            diseaseInput.dispatchEvent(new Event('input', { bubbles: true }));
+        const searchBtn = document.getElementById('search-disease');
+        diseases.forEach(d => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'dropdown-item';
+            a.href = '#';
+            a.textContent = d;
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                diseaseInput.value = d;
+                bootstrap.Dropdown.getOrCreateInstance(searchBtn).hide();
+            });
+            li.appendChild(a);
+            menu.appendChild(li);
+        });
+        if (diseases.length > 0) {
+            new bootstrap.Dropdown(searchBtn).show();
         }
     }
 
