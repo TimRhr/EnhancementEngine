@@ -155,3 +155,35 @@ def test_fetch_associated_genes_creates_cache_dir(monkeypatch, tmp_path):
     result = client.fetch_associated_genes("disease")
     assert result == {"GENE1": ["VAR1"]}
     assert (tmp_path / "disease").exists()
+
+
+def test_rate_limit(monkeypatch):
+    """_rate_limit should pause when called rapidly."""
+
+    times = iter([0.0, 0.0, 0.1, 0.1])
+    sleep_calls = []
+
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.time.time", lambda: next(times)
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.time.sleep",
+        lambda s: sleep_calls.append(s),
+    )
+
+    client = DiseaseDatabaseClient("test@example.com")
+    client._rate_limit()
+    client._rate_limit()
+
+    assert sleep_calls[0] == pytest.approx(client.request_delay)
+    assert sleep_calls[1] == pytest.approx(client.request_delay - 0.1)
+
+
+def test_init_sets_api_key(monkeypatch):
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.api_key", None, raising=False
+    )
+    DiseaseDatabaseClient("test@example.com", api_key="key")
+    from enhancement_engine.core.disease_db import Entrez
+
+    assert Entrez.api_key == "key"

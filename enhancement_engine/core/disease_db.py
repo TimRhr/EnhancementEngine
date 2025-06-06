@@ -3,6 +3,7 @@ from __future__ import annotations
 """ClinVar/MedGen client for disease information."""
 
 import logging
+import time
 from typing import Dict, Optional, List, Set
 
 from .database import CacheManager
@@ -16,16 +17,39 @@ except ImportError:  # pragma: no cover - biopython required
 class DiseaseDatabaseClient:
     """Query ClinVar/MedGen for disease risk data."""
 
-    def __init__(self, email: str, cache_dir: str = "data/cache/disease_db"):
+    def __init__(
+        self,
+        email: str,
+        cache_dir: str = "data/cache/disease_db",
+        api_key: Optional[str] = None,
+        request_delay: float = 0.34,
+    ):
         if Entrez is None:
             raise ImportError("Biopython is required for DiseaseDatabaseClient")
+
         Entrez.email = email
+        if api_key:
+            Entrez.api_key = api_key
+
+        self.request_delay = request_delay
+        self._last_request = 0.0
+
         self.logger = logging.getLogger(__name__)
         self.cache = CacheManager(cache_dir)
 
     def _read(self, handle):
         """Wrapper around ``Entrez.read`` disabling XML validation."""
         return Entrez.read(handle, validate=False)
+
+    def _rate_limit(self) -> None:
+        """Enforce rate limiting for NCBI requests."""
+        current_time = time.time()
+        elapsed = current_time - self._last_request
+
+        if elapsed < self.request_delay:
+            time.sleep(self.request_delay - elapsed)
+
+        self._last_request = time.time()
 
     def fetch_disease_info(
         self, gene: str, variant: str, disease: Optional[str] = None
@@ -47,12 +71,14 @@ class DiseaseDatabaseClient:
         query = " AND ".join(query_parts)
 
         try:
+            self._rate_limit()
             search_handle = Entrez.esearch(db="clinvar", term=query, retmax=1)
             search_result = self._read(search_handle)
             search_handle.close()
             ids = search_result.get("IdList", [])
             if not ids:
                 return None
+            self._rate_limit()
             summary_handle = Entrez.esummary(db="clinvar", id=ids[0])
             summary = self._read(summary_handle)
             summary_handle.close()
@@ -76,12 +102,14 @@ class DiseaseDatabaseClient:
             return cached
 
         try:
+            self._rate_limit()
             handle = Entrez.esearch(db="medgen", term=term, retmax=max_results)
             result = self._read(handle)
             handle.close()
             ids = result.get("IdList", [])
             names = []
             for did in ids:
+                self._rate_limit()
                 sum_handle = Entrez.esummary(db="medgen", id=did)
                 summary = self._read(sum_handle)
                 sum_handle.close()
@@ -129,6 +157,7 @@ class DiseaseDatabaseClient:
 
         def query(term: str) -> List[str]:
             try:
+                self._rate_limit()
                 handle = Entrez.esearch(db="clinvar", term=term, retmax=max_results)
                 result = self._read(handle)
                 handle.close()
@@ -140,6 +169,7 @@ class DiseaseDatabaseClient:
         def collect(ids: List[str]) -> None:
             for cid in ids:
                 try:
+                    self._rate_limit()
                     sum_handle = Entrez.esummary(db="clinvar", id=cid)
                     summary = self._read(sum_handle)
                     sum_handle.close()
