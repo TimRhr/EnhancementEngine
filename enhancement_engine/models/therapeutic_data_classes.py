@@ -341,3 +341,264 @@ class ReversalStrategy:
 TherapeuticTargets = List[TherapeuticTarget]
 CorrectionStrategies = List[CorrectionStrategy]
 DiseaseRisks = List[DiseaseRisk]
+
+
+# ---------------------------------------------------------------------------
+# Additional therapeutic data classes used across the therapeutic modules
+# ---------------------------------------------------------------------------
+
+
+class TargetTissue(Enum):
+    """Tissues that can be targeted for delivery."""
+
+    LIVER = "liver"
+    SPLEEN = "spleen"
+    BONE_MARROW = "bone_marrow"
+    SYNOVIAL = "synovial"
+    BRAIN = "brain"
+    MUSCLE = "muscle"
+    SKIN = "skin"
+    IMMUNE_CELLS = "immune_cells"
+    ANTIGEN_PRESENTING = "antigen_presenting"
+    T_CELLS = "t_cells"
+    SYSTEMIC = "systemic"
+
+
+class TherapeuticStrategy(Enum):
+    """High level therapeutic strategies."""
+
+    BASE_EDITING = "base_editing"
+    GENE_REPLACEMENT = "gene_replacement"
+    GENE_SILENCING = "gene_silencing"
+    ACTIVATION = "activation"
+    KNOCKOUT = "knockout"
+
+
+@dataclass
+class DeliveryEfficiency:
+    """Efficiency metrics for therapeutic delivery."""
+
+    cells_reached: int
+    successful_edits: int
+    editing_percentage: float
+    tissue_penetration: float
+    persistence_score: float
+    off_tissue_distribution: float
+
+
+@dataclass
+class TissueDistribution:
+    """Predicted tissue distribution profile."""
+
+    distribution_profile: Dict[TargetTissue, float]
+    efficiency_per_tissue: Dict[TargetTissue, float]
+    peak_concentration_hours: float
+    clearance_half_life: float
+
+
+@dataclass
+class ClinicalPhase:
+    """Clinical development phase information."""
+
+    phase_name: str
+    phase_type: str
+    duration_months: int
+    estimated_cost: float
+    key_studies: List[str] = field(default_factory=list)
+    primary_objectives: List[str] = field(default_factory=list)
+    success_criteria: List[str] = field(default_factory=list)
+    regulatory_deliverables: List[str] = field(default_factory=list)
+    study_design: Optional[Dict[str, Any]] = None
+    inclusion_criteria: List[str] = field(default_factory=list)
+    exclusion_criteria: List[str] = field(default_factory=list)
+    primary_endpoints: List[str] = field(default_factory=list)
+    secondary_endpoints: List[str] = field(default_factory=list)
+    biomarker_strategy: Optional["BiomarkerStrategy"] = None
+
+
+@dataclass
+class RegulatoryPathway:
+    """Chosen regulatory pathway for clinical development."""
+
+    pathway_type: str
+    regulatory_region: Enum
+    orphan_designation: bool
+    breakthrough_designation: bool
+    fast_track_designation: bool
+    estimated_review_time_months: int
+
+
+@dataclass
+class INDPackage:
+    """Information compiled for an IND submission."""
+
+    administrative_info: Dict[str, Any]
+    cmc_section: Dict[str, Any]
+    pharmacology_toxicology: Dict[str, Any]
+    clinical_protocol: Dict[str, Any]
+    investigator_information: Dict[str, Any]
+    submission_date: datetime
+    estimated_review_time: int
+    special_designations: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ManufacturingRequirements:
+    """Manufacturing needs for clinical material production."""
+
+    manufacturing_components: Dict[str, Any]
+    quality_control_requirements: List[str]
+    facility_requirements: List[str]
+    regulatory_requirements: List[str]
+    cost_estimates: Dict[str, float]
+    timeline_estimates: Dict[str, Any]
+    risk_assessment: Dict[str, Any]
+    scalability_plan: Dict[str, Any]
+    complexity_score: int = 0
+
+
+@dataclass
+class BiomarkerStrategy:
+    """Plan for biomarker development and validation."""
+
+    target_engagement_biomarkers: List[str]
+    pharmacodynamic_biomarkers: List[str]
+    safety_biomarkers: List[str]
+    efficacy_biomarkers: List[str]
+    predictive_biomarkers: List[str]
+    analytical_methods: List[str]
+    validation_plan: Dict[str, Any]
+    regulatory_strategy: Dict[str, Any]
+
+
+@dataclass
+class ClinicalTrialDesign:
+    """Design parameters for a clinical trial."""
+
+    phase: str
+    sample_size: int
+    primary_endpoints: List[str]
+    secondary_endpoints: List[str]
+    inclusion_criteria: List[str]
+    exclusion_criteria: List[str]
+    duration_months: int
+
+    @property
+    def estimated_cost(self) -> float:
+        base_costs = {"Phase_I": 5e6, "Phase_II": 15e6, "Phase_III": 50e6}
+        base_cost = base_costs.get(self.phase, 10e6)
+        return base_cost * (self.sample_size / 100) * (self.duration_months / 12)
+
+
+@dataclass
+class PopulationParameters:
+    """Key population inputs for simulation."""
+
+    target_disease: str
+    population_size: int
+    risk_distribution: Dict[str, float]
+    baseline_prevalence: float
+    intervention_coverage: float
+
+
+@dataclass
+class EpidemiologicalModel:
+    """Epidemiological model parameters."""
+
+    incidence_rate_per_100k: float
+    progression_model: Dict[str, Any]
+    mortality_rate: float
+
+
+@dataclass
+class HealthEconomicModel:
+    """Health economic parameters for cost-effectiveness."""
+
+    annual_direct_cost: float
+    annual_indirect_cost: float
+    qaly_loss_per_year: float
+    discount_rates: Dict[str, float]
+
+
+@dataclass
+class ImplementationStrategy:
+    """Implementation approach for population rollout."""
+
+    strategy_name: str
+    coverage_plan: Dict[str, float]
+    cost_estimate: float
+    resource_requirements: List[str]
+    training_needs: List[str]
+    policy_considerations: List[str]
+
+
+@dataclass
+class PopulationOutcome:
+    """Results of a population intervention simulation."""
+
+    intervention_name: str
+    simulation_date: datetime
+    population_size: int
+    scenario_results: Dict[str, Any]
+    scenario_comparison: Dict[str, Any]
+    population_metrics: Dict[str, float]
+    economic_analysis: Dict[str, Any]
+    implementation_recommendations: List[str]
+
+
+@dataclass
+class TherapeuticImpact:
+    """Overall impact metrics of a therapeutic intervention."""
+
+    reduction_in_prevalence: float
+    qalys_gained: float
+    cost_effectiveness: float
+    long_term_outcome: str
+
+
+@dataclass
+class SafetyTrigger:
+    """Condition that triggers an emergency response."""
+
+    condition: Enum
+    severity_threshold: str
+    response_time_hours: int
+    automatic_activation: bool
+
+
+@dataclass
+class EmergencyProtocol:
+    """Emergency protocol for rapid reversal."""
+
+    protocol_id: str
+    triggers: List[SafetyTrigger]
+    escalation_steps: List[Dict[str, Any]]
+    contact_information: Dict[str, str]
+    reversal_agents: Dict[str, Any]
+    monitoring_requirements: List[str]
+    documentation_requirements: List[str]
+
+
+@dataclass
+class ReversalEfficiency:
+    """Efficiency metrics after a reversal attempt."""
+
+    overall_efficiency: float
+    molecular_efficiency: float
+    functional_efficiency: float
+    safety_efficiency: float
+    temporal_efficiency: float
+    success_criteria_met: bool
+    recommendations: List[str]
+
+
+@dataclass
+class TemporalControl:
+    """Temporal control parameters for reversible systems."""
+
+    control_method: str
+    induction_mechanism: str
+    deactivation_mechanism: str
+    expected_duration_days: int
+    external_trigger: Optional[str] = None
+
