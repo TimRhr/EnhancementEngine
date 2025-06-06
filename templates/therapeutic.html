@@ -62,11 +62,13 @@
     <form method="post">
         <div class="mb-3">
             <label for="gene" class="form-label">Gene Symbol</label>
-            <input type="text" class="form-control" id="gene" name="gene" required>
+            <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required>
+            <datalist id="gene-list"></datalist>
         </div>
         <div class="mb-3">
             <label for="variant" class="form-label">Variant</label>
-            <input type="text" class="form-control" id="variant" name="variant">
+            <input list="variant-list" type="text" class="form-control" id="variant" name="variant">
+            <datalist id="variant-list"></datalist>
         </div>
         <div class="mb-3">
             <label for="disease" class="form-label">Disease</label>
@@ -104,12 +106,50 @@
         });
     }
 
+    let diseaseGeneData = {};
+
+    async function updateGeneList(disease) {
+        const geneList = document.getElementById('gene-list');
+        const variantList = document.getElementById('variant-list');
+        geneList.innerHTML = '';
+        variantList.innerHTML = '';
+        if (!disease) return;
+        const resp = await fetch(`/api/disease_info?disease=${encodeURIComponent(disease)}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        diseaseGeneData = data.variants || {};
+        (data.genes || []).forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g;
+            geneList.appendChild(opt);
+        });
+    }
+
+    function updateVariantList(gene) {
+        const variantList = document.getElementById('variant-list');
+        variantList.innerHTML = '';
+        if (!gene || !diseaseGeneData[gene]) return;
+        diseaseGeneData[gene].forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            variantList.appendChild(opt);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const diseaseInput = document.getElementById('disease');
+        const geneInput = document.getElementById('gene');
         updateDiseaseList('');
+        updateGeneList(diseaseInput.value);
         diseaseInput.addEventListener('input', () => {
             const q = diseaseInput.value;
             updateDiseaseList(q);
+        });
+        diseaseInput.addEventListener('change', () => {
+            updateGeneList(diseaseInput.value);
+        });
+        geneInput.addEventListener('change', () => {
+            updateVariantList(geneInput.value);
         });
     });
 </script>

@@ -53,3 +53,29 @@ def test_disease_api(monkeypatch):
     assert "dynamic" in data["diseases"]
     lower = [d.lower() for d in data["diseases"]]
     assert len(lower) == len(set(lower))
+
+
+def test_disease_info_api(monkeypatch):
+    from enhancement_engine.webapp import run as run_module
+
+    fake = {
+        "cat": {
+            "G1": {
+                "disease_associations": {"dis": {}},
+                "pathogenic_variants": {"v1": {}, "v2": {}}
+            },
+            "G2": {
+                "disease_associations": {"other": {}},
+                "pathogenic_variants": {"x": {}}
+            }
+        }
+    }
+
+    monkeypatch.setattr(run_module, "DISEASE_GENES", fake)
+
+    client = app.test_client()
+    resp = client.get("/api/disease_info?disease=dis")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert set(data["genes"]) == {"G1"}
+    assert set(data["variants"]["G1"]) == {"v1", "v2"}

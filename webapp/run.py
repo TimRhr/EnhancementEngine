@@ -222,6 +222,25 @@ def create_app(config: Optional[dict] = None) -> Flask:
             results = sorted(combined.values())
         return jsonify({"diseases": results})
 
+    @app.route("/api/disease_info", methods=["GET"])
+    def api_disease_info():
+        """Return genes and variants associated with a disease."""
+        disease = request.args.get("disease", "").strip()
+        if not disease:
+            return jsonify({"genes": [], "variants": {}})
+
+        genes = []
+        variants = {}
+        for category in DISEASE_GENES.values():
+            for gene, info in category.items():
+                assoc = info.get("disease_associations", {})
+                if disease in assoc:
+                    genes.append(gene)
+                    vars_for_gene = list(info.get("pathogenic_variants", {}).keys())
+                    variants[gene] = vars_for_gene
+
+        return jsonify({"genes": genes, "variants": variants})
+
     @app.route("/therapeutic", methods=["GET", "POST"])
     def therapeutic():
         """Run therapeutic analysis via simple form."""
