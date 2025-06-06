@@ -62,6 +62,23 @@ def test_disease_api(monkeypatch):
     assert len(lower) == len(set(lower))
 
 
+def test_disease_api_specific_search(monkeypatch):
+    """Ensure /api/diseases returns mocked diseases for a query."""
+    from enhancement_engine.core.disease_db import DiseaseDatabaseClient
+
+    monkeypatch.setattr(
+        DiseaseDatabaseClient,
+        "search_diseases",
+        lambda self, term, max_results=5: ["dynamic disease"],
+    )
+
+    client = app.test_client()
+    resp = client.get("/api/diseases?q=dynamic")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "dynamic disease" in data["diseases"]
+
+
 def test_disease_info_api(monkeypatch):
     import webapp.run as run_module
 
