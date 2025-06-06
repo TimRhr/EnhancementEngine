@@ -424,6 +424,7 @@ class GeneReplacementDesigner:
             guide_rnas=[],  # Would design multiple guides
             template_sequence=protective_allele
         )
+
         
         self.logger.info(f"Designed HLA replacement: {harmful_allele} -> {protective_allele}")
         return correction_strategy

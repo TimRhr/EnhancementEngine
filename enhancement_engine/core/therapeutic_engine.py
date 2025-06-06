@@ -64,6 +64,7 @@ class TherapeuticEnhancementEngine:
         
         # Setup logging
         self.logger = logging.getLogger(__name__)
+
         
         # Initialize core components
         self._initialize_therapeutic_components()
