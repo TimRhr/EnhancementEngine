@@ -213,7 +213,13 @@ def create_app(config: Optional[dict] = None) -> Flask:
                     dynamic = therapeutic_engine.disease_db_client.search_diseases(query)
                 except Exception as e:  # pragma: no cover - network errors
                     app.logger.warning(f"Dynamic disease search failed: {e}")
-            results = sorted(set(results + dynamic))
+
+            combined = {}
+            for name in results + dynamic:
+                key = name.lower()
+                if key not in combined:
+                    combined[key] = name
+            results = sorted(combined.values())
         return jsonify({"diseases": results})
 
     @app.route("/therapeutic", methods=["GET", "POST"])
