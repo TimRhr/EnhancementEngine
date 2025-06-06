@@ -174,10 +174,20 @@ def test_disease_info_api_synonym_fallback(monkeypatch):
 
 
 def test_therapeutic_page_contains_failure_message():
+    from bs4 import BeautifulSoup
+
     client = app.test_client()
     resp = client.get("/therapeutic")
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
+
+    soup = BeautifulSoup(html, "html.parser")
+    gv = soup.find(id="gene-variant-section")
+    assert gv is not None
+    assert "display:none" in (gv.get("style", "").replace(" ", "").lower())
+
+    assert soup.find("button", id="confirm-disease") is not None
+
     assert "No genes found for" in html
 
     
