@@ -281,12 +281,52 @@ def test_disease_datalist_updates(monkeypatch):
     assert data["diseases"] == ["dynamic disease"]
 
     soup = BeautifulSoup(page.get_data(as_text=True), "html.parser")
-    dl = soup.find("datalist", id="disease-list")
-    assert dl is not None
-    dl.clear()
+    menu = soup.find("ul", id="disease-results")
+    assert menu is not None
+    menu.clear()
     for name in data["diseases"]:
-        opt = soup.new_tag("option")
-        opt["value"] = name
-        dl.append(opt)
+        li = soup.new_tag("li")
+        a = soup.new_tag("a", href="#")
+        a["class"] = "dropdown-item"
+        a.string = name
+        li.append(a)
+        menu.append(li)
 
-    assert dl.find("option", {"value": "dynamic disease"}) is not None
+    assert menu.find("a", string="dynamic disease") is not None
+
+
+def test_disease_dropdown_populates(monkeypatch):
+    """Disease dropdown menu should populate with search results."""
+    from enhancement_engine.core.disease_db import DiseaseDatabaseClient
+    from bs4 import BeautifulSoup
+
+    monkeypatch.setattr(
+        DiseaseDatabaseClient,
+        "search_diseases",
+        lambda self, term, max_results=5: ["d1", "d2"],
+    )
+
+    client = app.test_client()
+    page = client.get("/therapeutic")
+    assert page.status_code == 200
+
+    resp = client.get("/api/diseases?q=d1")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    for d in ["d1", "d2"]:
+        assert d in data["diseases"]
+
+    soup = BeautifulSoup(page.get_data(as_text=True), "html.parser")
+    menu = soup.find("ul", id="disease-results")
+    assert menu is not None
+    menu.clear()
+    for name in data["diseases"]:
+        li = soup.new_tag("li")
+        a = soup.new_tag("a", href="#")
+        a["class"] = "dropdown-item"
+        a.string = name
+        li.append(a)
+        menu.append(li)
+
+    items = [item.get_text(strip=True) for item in menu.find_all("li")]
+    assert "d1" in items and "d2" in items
