@@ -65,7 +65,7 @@
             <div class="dropdown">
                 <div class="input-group">
                     <input type="text" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
-                    <button type="button" class="btn btn-outline-secondary" id="search-disease" data-bs-toggle="dropdown">
+                    <button type="button" class="btn btn-outline-secondary" id="search-disease">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -136,7 +136,7 @@
             menu.appendChild(li);
         });
         if (diseases.length > 0) {
-            new bootstrap.Dropdown(searchBtn).show();
+            bootstrap.Dropdown.getOrCreateInstance(searchBtn).show();
         }
     }
 
