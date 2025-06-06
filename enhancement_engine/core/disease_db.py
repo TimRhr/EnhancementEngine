@@ -85,12 +85,17 @@ class DiseaseDatabaseClient:
                 sum_handle = Entrez.esummary(db="medgen", id=did)
                 summary = self._read(sum_handle)
                 sum_handle.close()
-                if summary:
-                    name = (
-                        summary[0].get("Description")
-                        or summary[0].get("Title")
-                        or summary[0].get("Name")
+
+                if isinstance(summary, list):
+                    doc = summary[0] if summary else None
+                else:
+                    doc = summary.get("DocumentSummarySet", {}).get(
+                        "DocumentSummary", []
                     )
+                    doc = doc[0] if isinstance(doc, list) and doc else None
+
+                if doc:
+                    name = doc.get("Description") or doc.get("Title") or doc.get("Name")
                     if name:
                         normalized = name.strip().lower()
                         if normalized:
