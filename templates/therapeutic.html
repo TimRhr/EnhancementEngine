@@ -60,19 +60,6 @@
     {% endif %}
 
     <form method="post">
-        <div id="gene-variant-section" style="display:none;">
-            <div class="mb-3">
-                <label for="gene" class="form-label">Gene Symbol</label>
-                <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required autocomplete="off">
-                <datalist id="gene-list"></datalist>
-                <div id="gene-message" class="form-text text-danger"></div>
-            </div>
-            <div class="mb-3">
-                <label for="variant" class="form-label">Variant</label>
-                <input list="variant-list" type="text" class="form-control" id="variant" name="variant" autocomplete="off">
-                <datalist id="variant-list"></datalist>
-            </div>
-        </div>
         <div class="mb-3">
             <label for="disease" class="form-label">Disease</label>
             <div class="input-group">
@@ -85,6 +72,19 @@
             <button type="button" id="confirm-disease" class="btn btn-secondary mt-2">
                 Load Disease Info
             </button>
+        </div>
+        <div id="gene-variant-section" style="display:none;">
+            <div class="mb-3">
+                <label for="gene" class="form-label">Gene Symbol</label>
+                <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required autocomplete="off">
+                <datalist id="gene-list"></datalist>
+                <div id="gene-message" class="form-text text-danger"></div>
+            </div>
+            <div class="mb-3">
+                <label for="variant" class="form-label">Variant</label>
+                <input list="variant-list" type="text" class="form-control" id="variant" name="variant" autocomplete="off">
+                <datalist id="variant-list"></datalist>
+            </div>
         </div>
         <div class="mb-3">
             <label for="age" class="form-label">Patient Age</label>
