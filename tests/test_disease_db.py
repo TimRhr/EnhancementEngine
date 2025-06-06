@@ -120,6 +120,35 @@ def test_search_diseases_handles_dict_summary(monkeypatch, tmp_path):
     assert result == ["test disease"]
 
 
+def test_search_diseases_deduplicates(monkeypatch, tmp_path):
+    """search_diseases should remove duplicate names."""
+
+    def fake_esearch(db, term, retmax=20):
+        return DummyHandle("search")
+
+    def fake_esummary(db, id):
+        return DummyHandle("summary")
+
+    def fake_read(handle, validate=False):
+        if handle.name == "search":
+            return {"IdList": ["1", "2"]}
+        return {
+            "DocumentSummarySet": {"DocumentSummary": [{"Description": "Dup"}]}
+        }
+
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esearch", fake_esearch
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esummary", fake_esummary
+    )
+    monkeypatch.setattr("enhancement_engine.core.disease_db.Entrez.read", fake_read)
+
+    client = DiseaseDatabaseClient("test@example.com", cache_dir=str(tmp_path))
+    result = client.search_diseases("dup")
+    assert result == ["dup"]
+
+
 def test_fetch_associated_genes_creates_cache_dir(monkeypatch, tmp_path):
     """fetch_associated_genes should create cache dir and parse dict summary."""
 
