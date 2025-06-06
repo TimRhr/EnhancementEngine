@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
+import threading
 from typing import Dict, Optional, List, Set
 
 from .database import CacheManager
@@ -33,6 +34,7 @@ class DiseaseDatabaseClient:
 
         self.request_delay = request_delay
         self._last_request = 0.0
+        self._request_lock = threading.Lock()
 
         self.logger = logging.getLogger(__name__)
         self.cache = CacheManager(cache_dir)
@@ -43,13 +45,14 @@ class DiseaseDatabaseClient:
 
     def _rate_limit(self) -> None:
         """Enforce rate limiting for NCBI requests."""
-        current_time = time.time()
-        elapsed = current_time - self._last_request
+        with self._request_lock:
+            current_time = time.time()
+            elapsed = current_time - self._last_request
 
-        if elapsed < self.request_delay:
-            time.sleep(self.request_delay - elapsed)
+            if elapsed < self.request_delay:
+                time.sleep(self.request_delay - elapsed)
 
-        self._last_request = time.time()
+            self._last_request = time.time()
 
     def fetch_disease_info(
         self, gene: str, variant: str, disease: Optional[str] = None
@@ -128,6 +131,15 @@ class DiseaseDatabaseClient:
                         normalized = name.strip().lower()
                         if normalized:
                             names.append(normalized)
+
+            unique: List[str] = []
+            seen: Set[str] = set()
+            for n in names:
+                if n not in seen:
+                    unique.append(n)
+                    seen.add(n)
+            names = unique
+
             self.cache.set(cache_key, names, "disease")
             return names
         except Exception as exc:
