@@ -65,6 +65,11 @@ class DiseaseDatabaseClient:
 
     def search_diseases(self, term: str, max_results: int = 5) -> List[str]:
         """Search MedGen for disease names matching the term."""
+        cache_key = f"search_{term}"
+        cached = self.cache.get(cache_key, "disease")
+        if cached:
+            return cached
+
         try:
             handle = Entrez.esearch(db="medgen", term=term, retmax=max_results)
             result = Entrez.read(handle)
@@ -85,6 +90,7 @@ class DiseaseDatabaseClient:
                         normalized = name.strip().lower()
                         if normalized:
                             names.append(normalized)
+            self.cache.set(cache_key, names, "disease")
             return names
         except Exception as exc:  # pragma: no cover - network errors
             self.logger.warning(f"Failed to search diseases: {exc}")
