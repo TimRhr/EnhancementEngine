@@ -63,7 +63,7 @@ class DiseaseDatabaseClient:
             self.logger.warning(f"Failed to query ClinVar: {exc}")
             return None
 
-    def search_diseases(self, term: str, max_results: int = 5) -> List[str]:
+    def search_diseases(self, term: str, max_results: int = 20) -> List[str]:
         """Search MedGen for disease names matching the term."""
         cache_key = f"search_{term}"
         cached = self.cache.get(cache_key, "disease")
@@ -97,7 +97,7 @@ class DiseaseDatabaseClient:
             return []
 
     def fetch_associated_genes(
-        self, disease: str, max_results: int = 5
+        self, disease: str, max_results: int = 20
     ) -> Dict[str, List[str]]:
         """Return genes and variants linked to a disease."""
         cache_key = f"assoc_{disease}"
@@ -106,13 +106,14 @@ class DiseaseDatabaseClient:
             return cached
 
         genes: Dict[str, Set[str]] = {}
-        try:
-            search_handle = Entrez.esearch(
-                db="clinvar", term=disease, retmax=max_results
-            )
-            search_result = Entrez.read(search_handle)
-            search_handle.close()
-            ids = search_result.get("IdList", [])
+
+        def query(term: str) -> List[str]:
+            handle = Entrez.esearch(db="clinvar", term=term, retmax=max_results)
+            result = Entrez.read(handle)
+            handle.close()
+            return result.get("IdList", [])
+
+        def collect(ids: List[str]) -> None:
             for cid in ids:
                 sum_handle = Entrez.esummary(db="clinvar", id=cid)
                 summary = Entrez.read(sum_handle)
@@ -134,6 +135,22 @@ class DiseaseDatabaseClient:
                 genes.setdefault(gene, set())
                 if variant:
                     genes[gene].add(variant)
+
+        try:
+            ids = query(disease)
+            if not ids:
+                syns = self.search_diseases(disease, max_results=max_results)
+                for s in syns:
+                    s_ids = query(s)
+                    result = {}
+                    if s_ids:
+                        collect(s_ids)
+                        result = {g: sorted(v) for g, v in genes.items()}
+                    self.cache.set(f"assoc_{s}", result, "disease")
+                    if result:
+                        break
+            else:
+                collect(ids)
 
             result = {g: sorted(v) for g, v in genes.items()}
             self.cache.set(cache_key, result, "disease")
