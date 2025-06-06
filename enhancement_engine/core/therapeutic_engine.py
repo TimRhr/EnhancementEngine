@@ -492,7 +492,8 @@ class TherapeuticEnhancementEngine:
         
         # Treatment recommendation based on benefit-risk
         overall_benefit = efficacy.overall_efficacy
-        overall_risk = (10 - safety.overall_safety_score) / 10
+        # Convert safety score (0-100) to risk scale (0-1)
+        overall_risk = (100 - safety.overall_safety_score) / 100
         
         if overall_benefit > 0.7 and overall_risk < 0.3:
             recommendations.append("Strongly recommended for treatment")
