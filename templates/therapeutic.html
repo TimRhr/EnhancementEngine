@@ -85,8 +85,11 @@
             </div>
             <div class="mb-3">
                 <label for="variant" class="form-label">Variant</label>
-                <input list="variant-list" type="text" class="form-control" id="variant" name="variant" autocomplete="off">
-                <datalist id="variant-list"></datalist>
+                <div class="dropdown">
+                    <input type="text" class="form-control" id="variant" name="variant"
+                           autocomplete="off">
+                    <ul class="dropdown-menu" id="variant-menu"></ul>
+                </div>
             </div>
         </div>
         <div class="mb-3">
@@ -161,12 +164,13 @@
 
     async function updateGeneList(disease) {
         const geneList = document.getElementById('gene-list');
-        const variantList = document.getElementById('variant-list');
+        const variantMenu = document.getElementById('variant-menu');
         const messageEl = document.getElementById('gene-message');
         const loadingEl = document.getElementById('gene-loading');
         const geneSection = document.getElementById('gene-variant-section');
         geneList.innerHTML = '';
-        variantList.innerHTML = '';
+        variantMenu.innerHTML = '';
+        if (variantMenu) variantMenu.classList.remove('show');
         if (messageEl) messageEl.textContent = '';
         if (!disease) return;
         if (messageEl) messageEl.textContent = 'Loading...';
@@ -199,19 +203,27 @@
     }
 
     function updateVariantList(gene) {
-        const variantList = document.getElementById('variant-list');
-        variantList.innerHTML = '';
+        const menu = document.getElementById('variant-menu');
+        if (!menu) return;
+        menu.innerHTML = '';
+        menu.classList.remove('show');
         if (!gene || !diseaseGeneData[gene]) return;
         diseaseGeneData[gene].forEach(v => {
-            const opt = document.createElement('option');
-            opt.value = v;
-            variantList.appendChild(opt);
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'dropdown-item';
+            a.href = '#';
+            a.textContent = v;
+            li.appendChild(a);
+            menu.appendChild(li);
         });
+        if (menu.children.length > 0) menu.classList.add('show');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         const diseaseInput = document.getElementById('disease');
         const geneInput = document.getElementById('gene');
+        const variantMenu = document.getElementById('variant-menu');
         const geneVariantSection = document.getElementById('gene-variant-section');
         if (geneVariantSection) geneVariantSection.style.display = 'none';
         const searchBtn = document.getElementById('search-disease');
@@ -221,6 +233,15 @@
         geneInput.addEventListener('change', () => {
             updateVariantList(geneInput.value);
         });
+        if (variantMenu) {
+            variantMenu.addEventListener('click', e => {
+                if (e.target && e.target.classList.contains('dropdown-item')) {
+                    e.preventDefault();
+                    document.getElementById('variant').value = e.target.textContent;
+                    variantMenu.classList.remove('show');
+                }
+            });
+        }
     });
 </script>
 </body>
