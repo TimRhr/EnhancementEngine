@@ -92,6 +92,10 @@
         const resp = await fetch(`/api/diseases${query ? '?q=' + encodeURIComponent(query) : ''}`);
         if (!resp.ok) return [];
         const data = await resp.json();
+        if (data.error) {
+            alert(data.error);
+            return [];
+        }
         return data.diseases || [];
     }
 
@@ -117,6 +121,10 @@
         const resp = await fetch(`/api/disease_info?disease=${encodeURIComponent(disease)}`);
         if (!resp.ok) return;
         const data = await resp.json();
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
         diseaseGeneData = data.variants || {};
         (data.genes || []).forEach(g => {
             const opt = document.createElement('option');
