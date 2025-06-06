@@ -278,7 +278,28 @@ def create_app(config: Optional[dict] = None) -> Flask:
             except Exception as exc:  # pragma: no cover - network errors
                 app.logger.warning(f"Dynamic disease info failed: {exc}")
 
+
         return jsonify({"genes": genes, "variants": variants})
+
+    @app.route("/api/gene_variants", methods=["GET"])
+    def api_gene_variants():
+        """Return available variants for the given gene."""
+        gene = request.args.get("gene", "").strip()
+
+        if not engine:
+            app.logger.warning("Enhancement Engine not initialized")
+            return jsonify({"variants": []})
+
+        if not gene:
+            return jsonify({"variants": []})
+
+        try:
+            result = engine.validate_gene_input(gene)
+            variants = result.get("available_variants", [])
+            return jsonify({"variants": variants})
+        except Exception as exc:  # pragma: no cover - unexpected errors
+            app.logger.warning(f"Gene variant lookup failed: {exc}")
+            return jsonify({"variants": []})
 
     @app.route("/therapeutic", methods=["GET", "POST"])
     def therapeutic():
