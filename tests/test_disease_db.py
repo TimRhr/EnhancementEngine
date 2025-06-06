@@ -1,9 +1,11 @@
 import pytest
 from enhancement_engine.core.disease_db import DiseaseDatabaseClient
 
+
 class DummyHandle:
     def __init__(self, name):
         self.name = name
+
     def close(self):
         pass
 
@@ -24,8 +26,12 @@ def test_fetch_disease_info_cached(monkeypatch, tmp_path):
             return {"IdList": ["1"]}
         return [{"OddsRatio": "2.0", "AlleleFrequency": "0.05", "Penetrance": "0.1"}]
 
-    monkeypatch.setattr("enhancement_engine.core.disease_db.Entrez.esearch", fake_esearch)
-    monkeypatch.setattr("enhancement_engine.core.disease_db.Entrez.esummary", fake_esummary)
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esearch", fake_esearch
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esummary", fake_esummary
+    )
     monkeypatch.setattr("enhancement_engine.core.disease_db.Entrez.read", fake_read)
 
     client = DiseaseDatabaseClient("test@example.com", cache_dir=str(tmp_path))
@@ -82,3 +88,32 @@ def test_disease_db_client_methods(monkeypatch, tmp_path):
     assert callable(client.search_diseases)
     assert hasattr(client, "fetch_associated_genes")
     assert callable(client.fetch_associated_genes)
+
+
+def test_search_diseases_handles_dict_summary(monkeypatch, tmp_path):
+    """search_diseases should handle dict summary structures."""
+
+    def fake_esearch(db, term, retmax=20):
+        return DummyHandle("search")
+
+    def fake_esummary(db, id):
+        return DummyHandle("summary")
+
+    def fake_read(handle, validate=False):
+        if handle.name == "search":
+            return {"IdList": ["1"]}
+        return {
+            "DocumentSummarySet": {"DocumentSummary": [{"Description": "Test Disease"}]}
+        }
+
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esearch", fake_esearch
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esummary", fake_esummary
+    )
+    monkeypatch.setattr("enhancement_engine.core.disease_db.Entrez.read", fake_read)
+
+    client = DiseaseDatabaseClient("test@example.com", cache_dir=str(tmp_path))
+    result = client.search_diseases("test")
+    assert result == ["test disease"]
