@@ -62,14 +62,12 @@
     <form method="post">
         <div class="mb-3">
             <label for="disease" class="form-label">Disease</label>
-            <div class="dropdown">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
-                    <button type="button" class="btn btn-outline-secondary" id="search-disease">
-                        <i id="search-icon" class="fas fa-search"></i>
-                        <span class="loading-spinner" id="search-spinner" style="display:none;"></span>
-                    </button>
-                </div>
+            <div class="input-group dropdown">
+                <input type="text" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
+                <button type="button" class="btn btn-outline-secondary" id="search-disease">
+                    <i id="search-icon" class="fas fa-search"></i>
+                    <span class="loading-spinner" id="search-spinner" style="display:none;"></span>
+                </button>
                 <ul class="dropdown-menu" id="disease-results"></ul>
             </div>
             <div id="gene-loading" class="mt-2" style="display:none;">

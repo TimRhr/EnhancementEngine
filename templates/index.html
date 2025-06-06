@@ -93,13 +93,17 @@
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="form-container">
-                    <!-- Error Alert -->
-                    {% if error %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
                     {% endif %}
+                    {% endwith %}
 
                     <h2 class="text-center mb-4">
                         <i class="fas fa-search me-2"></i>Gene Analysis
