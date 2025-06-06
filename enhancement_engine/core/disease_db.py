@@ -2,7 +2,7 @@ from __future__ import annotations
 """ClinVar/MedGen client for disease information."""
 
 import logging
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Set
 
 from .database import CacheManager
 
@@ -89,3 +89,49 @@ class DiseaseDatabaseClient:
         except Exception as exc:  # pragma: no cover - network errors
             self.logger.warning(f"Failed to search diseases: {exc}")
             return []
+
+    def fetch_associated_genes(
+        self, disease: str, max_results: int = 5
+    ) -> Dict[str, List[str]]:
+        """Return genes and variants linked to a disease."""
+        cache_key = f"assoc_{disease}"
+        cached = self.cache.get(cache_key, "disease")
+        if cached:
+            return cached
+
+        genes: Dict[str, Set[str]] = {}
+        try:
+            search_handle = Entrez.esearch(
+                db="clinvar", term=disease, retmax=max_results
+            )
+            search_result = Entrez.read(search_handle)
+            search_handle.close()
+            ids = search_result.get("IdList", [])
+            for cid in ids:
+                sum_handle = Entrez.esummary(db="clinvar", id=cid)
+                summary = Entrez.read(sum_handle)
+                sum_handle.close()
+                if not summary:
+                    continue
+                doc = summary[0]
+                gene = (
+                    doc.get("gene")
+                    or doc.get("gene_symbol")
+                    or doc.get("geneName")
+                    or ""
+                )
+                variant = doc.get("variation_name") or doc.get("title") or ""
+                gene = str(gene).strip()
+                variant = str(variant).strip()
+                if not gene:
+                    continue
+                genes.setdefault(gene, set())
+                if variant:
+                    genes[gene].add(variant)
+
+            result = {g: sorted(v) for g, v in genes.items()}
+            self.cache.set(cache_key, result, "disease")
+            return result
+        except Exception as exc:  # pragma: no cover - network errors
+            self.logger.warning(f"Failed to fetch associated genes: {exc}")
+            return {}
