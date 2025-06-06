@@ -111,8 +111,13 @@
                                 <label for="gene" class="form-label">
                                     <i class="fas fa-atom me-1"></i>Gene Symbol
                                 </label>
-                                <input type="text" class="form-control" id="gene" name="gene"
-                                       placeholder="e.g., COMT, BDNF, ACTN3" required autocomplete="off">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="gene" name="gene"
+                                           placeholder="e.g., COMT, BDNF, ACTN3" required autocomplete="off">
+                                    <button class="btn btn-outline-secondary" type="button" id="search-gene">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
                                 <div class="invalid-feedback">
                                     Please enter a gene symbol.
                                 </div>
@@ -124,6 +129,7 @@
                                 </label>
                                 <input type="text" class="form-control" id="variant" name="variant"
                                     placeholder="e.g., Val158Met" autocomplete="off">
+                                <ul class="dropdown-menu" id="variant-menu" style="display:none;"></ul>
                                 <div class="form-text">Enter specific variant or use default</div>
                             </div>
                             
@@ -209,13 +215,63 @@
         function fillGene(gene, variant) {
             document.getElementById('gene').value = gene;
             document.getElementById('variant').value = variant;
-            
+
             // Add visual feedback
             var examples = document.querySelectorAll('.example-gene');
             examples.forEach(el => el.style.background = '#e9ecef');
             event.target.style.background = '#28a745';
             event.target.style.color = 'white';
         }
+
+        async function fetchVariants(gene) {
+            const resp = await fetch('/api/gene_variants?gene=' + encodeURIComponent(gene));
+            const data = await resp.json();
+            return data.variants || [];
+        }
+
+        document.getElementById('search-gene').addEventListener('click', async function() {
+            const btn = this;
+            const icon = btn.querySelector('i');
+            const gene = document.getElementById('gene').value.trim();
+            if (!gene) return;
+            icon.classList.remove('fa-search');
+            icon.classList.add('fa-spinner', 'fa-spin');
+            try {
+                const variants = await fetchVariants(gene);
+                icon.classList.remove('fa-spinner', 'fa-spin');
+                icon.classList.add('fa-search');
+                const menu = document.getElementById('variant-menu');
+                menu.innerHTML = '';
+                variants.forEach(v => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'dropdown-item';
+                    a.href = '#';
+                    a.textContent = v;
+                    li.appendChild(a);
+                    menu.appendChild(li);
+                });
+                if (variants.length) {
+                    menu.classList.add('show');
+                    menu.style.display = 'block';
+                } else {
+                    menu.classList.remove('show');
+                    menu.style.display = 'none';
+                }
+            } catch (e) {
+                icon.classList.remove('fa-spinner', 'fa-spin');
+                icon.classList.add('fa-search');
+            }
+        });
+
+        document.getElementById('variant-menu').addEventListener('click', function(ev) {
+            if (ev.target.classList.contains('dropdown-item')) {
+                ev.preventDefault();
+                document.getElementById('variant').value = ev.target.textContent;
+                this.classList.remove('show');
+                this.style.display = 'none';
+            }
+        });
 
         // Email validation helper
         document.getElementById('email').addEventListener('blur', function() {
