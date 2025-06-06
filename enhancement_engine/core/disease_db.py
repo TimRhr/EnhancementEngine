@@ -76,9 +76,15 @@ class DiseaseDatabaseClient:
                 summary = Entrez.read(sum_handle)
                 sum_handle.close()
                 if summary:
-                    name = summary[0].get("Description") or summary[0].get("Title") or summary[0].get("Name")
+                    name = (
+                        summary[0].get("Description")
+                        or summary[0].get("Title")
+                        or summary[0].get("Name")
+                    )
                     if name:
-                        names.append(name)
+                        normalized = name.strip().lower()
+                        if normalized:
+                            names.append(normalized)
             return names
         except Exception as exc:  # pragma: no cover - network errors
             self.logger.warning(f"Failed to search diseases: {exc}")

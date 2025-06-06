@@ -36,7 +36,9 @@ def test_disease_api(monkeypatch):
     from enhancement_engine.core.disease_db import DiseaseDatabaseClient
 
     def fake_search(self, term, max_results=5):
-        return ["dynamic"] if term else []
+        if term:
+            return ["Dynamic", "dynamic", " dynamic "]
+        return []
 
     monkeypatch.setattr(DiseaseDatabaseClient, "search_diseases", fake_search)
 
@@ -49,3 +51,5 @@ def test_disease_api(monkeypatch):
     resp = client.get("/api/diseases?q=dyn")
     data = resp.get_json()
     assert "dynamic" in data["diseases"]
+    lower = [d.lower() for d in data["diseases"]]
+    assert len(lower) == len(set(lower))
