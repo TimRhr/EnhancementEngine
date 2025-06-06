@@ -18,6 +18,10 @@ sys.path.insert(0, str(parent_dir))
 from flask import Flask, render_template, request, jsonify, flash, redirect, url_for
 from enhancement_engine import EnhancementEngine
 from enhancement_engine.core.engine import EnhancementEngineError
+from enhancement_engine.core.therapeutic_engine import (
+    TherapeuticEnhancementEngine,
+    TherapeuticEngineError,
+)
 
 
 def setup_logging() -> None:
@@ -88,6 +92,16 @@ def create_app(config: Optional[dict] = None) -> Flask:
     except Exception as e:
         app.logger.error(f"Failed to initialize Enhancement Engine: {e}")
         engine = None
+
+    # Initialize therapeutic enhancement engine
+    try:
+        therapeutic_engine = TherapeuticEnhancementEngine(email=demo_email)
+        app.logger.info(
+            f"Therapeutic Engine initialized with email: {demo_email}"
+        )
+    except Exception as e:
+        app.logger.error(f"Failed to initialize Therapeutic Engine: {e}")
+        therapeutic_engine = None
     
     @app.route("/", methods=["GET"])
     def index():
@@ -178,6 +192,52 @@ def create_app(config: Optional[dict] = None) -> Flask:
         except Exception as e:
             app.logger.error(f"API error: {e}")
             return jsonify({"error": "Internal server error"}), 500
+
+    @app.route("/therapeutic", methods=["GET", "POST"])
+    def therapeutic():
+        """Run therapeutic analysis via simple form."""
+        if request.method == "POST":
+            if not therapeutic_engine:
+                flash(
+                    "Therapeutic Engine not available. Please check configuration.",
+                    "error",
+                )
+                return redirect(url_for("therapeutic"))
+
+            gene = request.form.get("gene", "").strip()
+            variant = request.form.get("variant", "").strip()
+            disease = request.form.get("disease", "rheumatoid_arthritis").strip()
+            age = request.form.get("age", "")
+
+            if not gene:
+                flash("Gene name is required", "error")
+                return redirect(url_for("therapeutic"))
+
+            patient_data = {}
+            if age:
+                try:
+                    patient_data["age"] = int(age)
+                except ValueError:
+                    patient_data["age"] = age
+
+            try:
+                app.logger.info(
+                    f"Therapeutic analysis of {gene} {variant} for {disease}"
+                )
+                report = therapeutic_engine.analyze_disease_gene(
+                    gene, variant, patient_data, disease
+                )
+                return render_template("therapeutic.html", report=report)
+            except TherapeuticEngineError as e:
+                app.logger.error(f"Therapeutic analysis error: {e}")
+                flash(f"Analysis failed: {str(e)}", "error")
+                return redirect(url_for("therapeutic"))
+            except Exception as e:
+                app.logger.error(f"Unexpected therapeutic error: {e}")
+                flash("An unexpected error occurred. Please try again.", "error")
+                return redirect(url_for("therapeutic"))
+
+        return render_template("therapeutic.html")
     
     @app.route("/health", methods=["GET"])
     def health_check():
