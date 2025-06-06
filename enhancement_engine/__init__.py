@@ -7,7 +7,7 @@ This package provides tools for:
 - Enhancement effect simulation
 - Comprehensive reporting and analysis
 
-Author: Tim Rhr
+Author: Tim Röhr
 Version: 0.1.0
 """
 
