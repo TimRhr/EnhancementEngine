@@ -1,4 +1,5 @@
 import pytest
+import shutil
 from enhancement_engine.core.disease_db import DiseaseDatabaseClient
 
 
@@ -117,3 +118,40 @@ def test_search_diseases_handles_dict_summary(monkeypatch, tmp_path):
     client = DiseaseDatabaseClient("test@example.com", cache_dir=str(tmp_path))
     result = client.search_diseases("test")
     assert result == ["test disease"]
+
+
+def test_fetch_associated_genes_creates_cache_dir(monkeypatch, tmp_path):
+    """fetch_associated_genes should create cache dir and parse dict summary."""
+
+    def fake_esearch(db, term, retmax=20):
+        return DummyHandle("search")
+
+    def fake_esummary(db, id):
+        return DummyHandle("summary")
+
+    def fake_read(handle, validate=False):
+        if handle.name == "search":
+            return {"IdList": ["1"]}
+        return {
+            "DocumentSummarySet": {
+                "DocumentSummary": [{"gene": "GENE1", "variation_name": "VAR1"}]
+            }
+        }
+
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esearch", fake_esearch
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esummary", fake_esummary
+    )
+    monkeypatch.setattr("enhancement_engine.core.disease_db.Entrez.read", fake_read)
+
+    client = DiseaseDatabaseClient("test@example.com", cache_dir=str(tmp_path))
+    # remove disease cache directory to ensure method recreates it
+    cache_dir = tmp_path / "disease"
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
+
+    result = client.fetch_associated_genes("disease")
+    assert result == {"GENE1": ["VAR1"]}
+    assert (tmp_path / "disease").exists()

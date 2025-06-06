@@ -122,6 +122,9 @@ class DiseaseDatabaseClient:
         if cached:
             return cached
 
+        # ensure disease cache directory exists
+        (self.cache.cache_dir / "disease").mkdir(exist_ok=True)
+
         genes: Dict[str, Set[str]] = {}
 
         def query(term: str) -> List[str]:
@@ -140,9 +143,15 @@ class DiseaseDatabaseClient:
                     sum_handle = Entrez.esummary(db="clinvar", id=cid)
                     summary = self._read(sum_handle)
                     sum_handle.close()
-                    if not summary:
+                    if isinstance(summary, list):
+                        doc = summary[0] if summary else None
+                    else:
+                        doc = summary.get("DocumentSummarySet", {}).get(
+                            "DocumentSummary", []
+                        )
+                        doc = doc[0] if isinstance(doc, list) and doc else None
+                    if not doc:
                         continue
-                    doc = summary[0]
                     gene = (
                         doc.get("gene")
                         or doc.get("gene_symbol")
