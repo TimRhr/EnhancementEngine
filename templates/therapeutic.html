@@ -72,9 +72,6 @@
                 </div>
                 <ul class="dropdown-menu" id="disease-results"></ul>
             </div>
-            <button type="button" id="confirm-disease" class="btn btn-secondary mt-2">
-                Load Disease Info
-            </button>
             <div id="gene-loading" class="mt-2" style="display:none;">
                 <span class="loading-spinner"></span> Loading gene data...
             </div>
@@ -138,9 +135,17 @@
                 a.className = 'dropdown-item';
                 a.href = '#';
                 a.textContent = d;
-                a.addEventListener('click', e => {
+                a.addEventListener('click', async e => {
                     e.preventDefault();
                     diseaseInput.value = d;
+                    const loadingEl = document.getElementById('gene-loading');
+                    const geneSection = document.getElementById('gene-variant-section');
+                    if (loadingEl) loadingEl.style.display = 'block';
+                    if (geneSection) geneSection.style.display = 'none';
+                    await updateGeneList(d);
+                    if (loadingEl) loadingEl.style.display = 'none';
+                    const hasGenes = document.getElementById('gene-list').children.length > 0;
+                    if (geneSection && hasGenes) geneSection.style.display = 'block';
                     bootstrap.Dropdown.getOrCreateInstance(searchBtn).hide();
                 });
                 li.appendChild(a);
@@ -208,21 +213,7 @@
         const diseaseInput = document.getElementById('disease');
         const geneInput = document.getElementById('gene');
         const geneVariantSection = document.getElementById('gene-variant-section');
-        const confirmBtn = document.getElementById('confirm-disease');
         if (geneVariantSection) geneVariantSection.style.display = 'none';
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', () => {
-                const disease = diseaseInput.value.trim();
-                if (disease) {
-                    const loadingEl = document.getElementById('gene-loading');
-                    if (loadingEl) loadingEl.style.display = 'block';
-                    if (geneVariantSection) geneVariantSection.style.display = 'none';
-                    updateGeneList(disease).then(() => {
-                        // handled inside updateGeneList
-                    });
-                }
-            });
-        }
         const searchBtn = document.getElementById('search-disease');
         searchBtn.addEventListener('click', () =>
             updateDiseaseList(diseaseInput.value.trim())
