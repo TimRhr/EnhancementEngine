@@ -40,6 +40,7 @@ class DeliveryMethod(Enum):
     INTRA_ARTICULAR = "intra_articular"    # For joint diseases
     INTRATHECAL = "intrathecal"            # For CNS diseases
     LOCAL_INJECTION = "local_injection"
+    INTRAMUSCULAR = "intramuscular"        # Direct muscle injection
     TOPICAL = "topical"
     INHALED = "inhaled"
     ORAL = "oral"
