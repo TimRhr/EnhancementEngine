@@ -118,6 +118,7 @@
     }
 
     let diseaseGeneData = {};
+    let diseaseTimeout;
 
     async function updateGeneList(disease) {
         const geneList = document.getElementById('gene-list');
@@ -166,8 +167,10 @@
         updateDiseaseList('');
         updateGeneList(diseaseInput.value);
         diseaseInput.addEventListener('input', () => {
-            const q = diseaseInput.value;
-            updateDiseaseList(q);
+            clearTimeout(diseaseTimeout);
+            diseaseTimeout = setTimeout(() => {
+                updateDiseaseList(diseaseInput.value);
+            }, 100);
         });
         diseaseInput.addEventListener('change', () => {
             updateGeneList(diseaseInput.value);
