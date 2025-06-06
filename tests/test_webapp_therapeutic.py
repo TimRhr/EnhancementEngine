@@ -144,3 +144,21 @@ def test_disease_info_api_synonym_fallback(monkeypatch):
     assert ("fetch", "unknown") in dummy.calls
     assert ("search", "unknown") in dummy.calls
     assert ("fetch", "synonym") in dummy.calls
+
+
+def test_dynamic_endpoints_unavailable(monkeypatch):
+    from enhancement_engine.webapp import run as run_module
+
+    # Simulate failure during TherapeuticEnhancementEngine initialization
+    monkeypatch.setattr(run_module, "TherapeuticEnhancementEngine", None)
+
+    app = run_module.create_app()
+    client = app.test_client()
+
+    resp = client.get("/api/diseases")
+    assert resp.status_code == 503
+    assert resp.get_json()["error"] == "Therapeutic engine unavailable"
+
+    resp = client.get("/api/disease_info?disease=test")
+    assert resp.status_code == 503
+    assert resp.get_json()["error"] == "Therapeutic engine unavailable"

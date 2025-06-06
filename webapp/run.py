@@ -100,9 +100,11 @@ def create_app(config: Optional[dict] = None) -> Flask:
         app.logger.info(
             f"Therapeutic Engine initialized with email: {demo_email}"
         )
+        app.config["THERAPEUTIC_FAILED"] = False
     except Exception as e:
         app.logger.error(f"Failed to initialize Therapeutic Engine: {e}")
         therapeutic_engine = None
+        app.config["THERAPEUTIC_FAILED"] = True
     
     @app.route("/", methods=["GET"])
     def index():
@@ -197,6 +199,11 @@ def create_app(config: Optional[dict] = None) -> Flask:
     @app.route("/api/diseases", methods=["GET"])
     def api_diseases():
         """Return disease name suggestions."""
+        if app.config.get("THERAPEUTIC_FAILED", False):
+            return (
+                jsonify({"error": "Therapeutic engine unavailable"}),
+                503,
+            )
         # gather static diseases
         static = set()
         for category in DISEASE_GENES.values():
@@ -225,6 +232,11 @@ def create_app(config: Optional[dict] = None) -> Flask:
     @app.route("/api/disease_info", methods=["GET"])
     def api_disease_info():
         """Return genes and variants associated with a disease."""
+        if app.config.get("THERAPEUTIC_FAILED", False):
+            return (
+                jsonify({"error": "Therapeutic engine unavailable"}),
+                503,
+            )
         disease = request.args.get("disease", "").strip()
         if not disease:
             return jsonify({"genes": [], "variants": {}})
