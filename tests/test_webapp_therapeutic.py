@@ -104,3 +104,43 @@ def test_disease_info_api_dynamic(monkeypatch):
     data = resp.get_json()
     assert data["genes"] == ["DG"]
     assert data["variants"]["DG"] == ["v1", "v2"]
+
+
+def test_disease_info_api_synonym_fallback(monkeypatch):
+    from enhancement_engine.webapp import run as run_module
+
+    monkeypatch.setattr(run_module, "DISEASE_GENES", {})
+
+    class DummyClient:
+        def __init__(self):
+            self.calls = []
+
+        def fetch_associated_genes(self, disease, max_results=5):
+            self.calls.append(("fetch", disease))
+            if disease == "synonym":
+                return {"SG": ["v1"]}
+            return {}
+
+        def search_diseases(self, term, max_results=5):
+            self.calls.append(("search", term))
+            return ["synonym"]
+
+    dummy = DummyClient()
+
+    if getattr(run_module, "therapeutic_engine", None):
+        monkeypatch.setattr(
+            run_module.therapeutic_engine,
+            "disease_db_client",
+            dummy,
+            raising=False,
+        )
+
+    client = app.test_client()
+    resp = client.get("/api/disease_info?disease=unknown")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["genes"] == ["SG"]
+    assert data["variants"]["SG"] == ["v1"]
+    assert ("fetch", "unknown") in dummy.calls
+    assert ("search", "unknown") in dummy.calls
+    assert ("fetch", "synonym") in dummy.calls

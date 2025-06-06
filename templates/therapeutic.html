@@ -148,6 +148,15 @@
         diseaseInput.addEventListener('change', () => {
             updateGeneList(diseaseInput.value);
         });
+        diseaseInput.addEventListener('blur', () => {
+            updateGeneList(diseaseInput.value);
+        });
+        const form = diseaseInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', () => {
+                updateGeneList(diseaseInput.value);
+            });
+        }
         geneInput.addEventListener('change', () => {
             updateVariantList(geneInput.value);
         });

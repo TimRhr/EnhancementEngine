@@ -244,9 +244,20 @@ def create_app(config: Optional[dict] = None) -> Flask:
         if not found and therapeutic_engine and getattr(therapeutic_engine, "disease_db_client", None):
             try:
                 dynamic = therapeutic_engine.disease_db_client.fetch_associated_genes(disease)
+                if not dynamic:
+                    syns = therapeutic_engine.disease_db_client.search_diseases(disease)
+                    for s in syns:
+                        dynamic = therapeutic_engine.disease_db_client.fetch_associated_genes(s)
+                        if dynamic:
+                            break
                 if dynamic:
-                    genes = list(dynamic.keys())
-                    variants = dynamic
+                    for g, vars_for_gene in dynamic.items():
+                        if g not in genes:
+                            genes.append(g)
+                        variants.setdefault(g, [])
+                        for v in vars_for_gene:
+                            if v not in variants[g]:
+                                variants[g].append(v)
             except Exception as exc:  # pragma: no cover - network errors
                 app.logger.warning(f"Dynamic disease info failed: {exc}")
 
