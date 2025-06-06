@@ -67,58 +67,66 @@ class DiseaseDatabaseClient:
             self.logger.warning(f"Failed to query ClinVar: {exc}")
             return None
 
-    def search_diseases(self, term: str, max_results: int = 20) -> List[str]:
-        """Search MedGen for disease names matching the term."""
-        cache_key = f"search_{term}"
-        cached = self.cache.get(cache_key, "disease")
-        if cached:
-            return cached
+    # In der DiseaseDatabaseClient Klasse, ändere die Exception-Handler:
 
+def search_diseases(self, term: str, max_results: int = 20) -> List[str]:
+    """Search MedGen for disease names matching the term."""
+    cache_key = f"search_{term}"
+    cached = self.cache.get(cache_key, "disease")
+    if cached:
+        return cached
+
+    try:
+        handle = Entrez.esearch(db="medgen", term=term, retmax=max_results)
+        result = self._read(handle)
+        handle.close()
+        ids = result.get("IdList", [])
+        names = []
+        for did in ids:
+            sum_handle = Entrez.esummary(db="medgen", id=did)
+            summary = self._read(sum_handle)
+            sum_handle.close()
+            if summary:
+                name = (
+                    summary[0].get("Description")
+                    or summary[0].get("Title")
+                    or summary[0].get("Name")
+                )
+                if name:
+                    normalized = name.strip().lower()
+                    if normalized:
+                        names.append(normalized)
+        self.cache.set(cache_key, names, "disease")
+        return names
+    except Exception as exc:
+        # Verbesserte Fehlerbehandlung
+        self.logger.warning(f"Failed to search diseases for term '{term}': {type(exc).__name__}: {exc}")
+        if "email" in str(exc).lower():
+            self.logger.error("NCBI requires a valid email address. Please check your DEMO_EMAIL setting.")
+        return []
+
+def fetch_associated_genes(self, disease: str, max_results: int = 20) -> Dict[str, List[str]]:
+    """Return genes and variants linked to a disease."""
+    cache_key = f"assoc_{disease}"
+    cached = self.cache.get(cache_key, "disease")
+    if cached:
+        return cached
+
+    genes: Dict[str, Set[str]] = {}
+
+    def query(term: str) -> List[str]:
         try:
-            handle = Entrez.esearch(db="medgen", term=term, retmax=max_results)
-            result = self._read(handle)
-            handle.close()
-            ids = result.get("IdList", [])
-            names = []
-            for did in ids:
-                sum_handle = Entrez.esummary(db="medgen", id=did)
-                summary = self._read(sum_handle)
-                sum_handle.close()
-                if summary:
-                    name = (
-                        summary[0].get("Description")
-                        or summary[0].get("Title")
-                        or summary[0].get("Name")
-                    )
-                    if name:
-                        normalized = name.strip().lower()
-                        if normalized:
-                            names.append(normalized)
-            self.cache.set(cache_key, names, "disease")
-            return names
-        except Exception as exc:  # pragma: no cover - network errors
-            self.logger.warning(f"Failed to search diseases: {exc}")
-            return []
-
-    def fetch_associated_genes(
-        self, disease: str, max_results: int = 20
-    ) -> Dict[str, List[str]]:
-        """Return genes and variants linked to a disease."""
-        cache_key = f"assoc_{disease}"
-        cached = self.cache.get(cache_key, "disease")
-        if cached:
-            return cached
-
-        genes: Dict[str, Set[str]] = {}
-
-        def query(term: str) -> List[str]:
             handle = Entrez.esearch(db="clinvar", term=term, retmax=max_results)
             result = self._read(handle)
             handle.close()
             return result.get("IdList", [])
+        except Exception as e:
+            self.logger.warning(f"Query failed for term '{term}': {e}")
+            return []
 
-        def collect(ids: List[str]) -> None:
-            for cid in ids:
+    def collect(ids: List[str]) -> None:
+        for cid in ids:
+            try:
                 sum_handle = Entrez.esummary(db="clinvar", id=cid)
                 summary = self._read(sum_handle)
                 sum_handle.close()
@@ -139,26 +147,32 @@ class DiseaseDatabaseClient:
                 genes.setdefault(gene, set())
                 if variant:
                     genes[gene].add(variant)
+            except Exception as e:
+                self.logger.warning(f"Failed to process ClinVar ID {cid}: {e}")
+                continue
 
-        try:
-            ids = query(disease)
-            if not ids:
-                syns = self.search_diseases(disease, max_results=max_results)
-                for s in syns:
-                    s_ids = query(s)
-                    result = {}
-                    if s_ids:
-                        collect(s_ids)
-                        result = {g: sorted(v) for g, v in genes.items()}
-                    self.cache.set(f"assoc_{s}", result, "disease")
-                    if result:
-                        break
-            else:
-                collect(ids)
+    try:
+        ids = query(disease)
+        if not ids:
+            syns = self.search_diseases(disease, max_results=max_results)
+            for s in syns:
+                s_ids = query(s)
+                result = {}
+                if s_ids:
+                    collect(s_ids)
+                    result = {g: sorted(v) for g, v in genes.items()}
+                self.cache.set(f"assoc_{s}", result, "disease")
+                if result:
+                    break
+        else:
+            collect(ids)
 
-            result = {g: sorted(v) for g, v in genes.items()}
-            self.cache.set(cache_key, result, "disease")
-            return result
-        except Exception as exc:  # pragma: no cover - network errors
-            self.logger.warning(f"Failed to fetch associated genes: {exc}")
-            return {}
+        result = {g: sorted(v) for g, v in genes.items()}
+        self.cache.set(cache_key, result, "disease")
+        return result
+    except Exception as exc:
+        # Verbesserte Fehlerbehandlung
+        self.logger.warning(f"Failed to fetch associated genes for disease '{disease}': {type(exc).__name__}: {exc}")
+        if "email" in str(exc).lower():
+            self.logger.error("NCBI requires a valid email address. Please check your DEMO_EMAIL setting.")
+        return {}

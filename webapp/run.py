@@ -204,6 +204,7 @@ def create_app(config: Optional[dict] = None) -> Flask:
                 jsonify({"error": "Therapeutic engine unavailable"}),
                 503,
             )
+        
         # gather static diseases
         static = set()
         for category in DISEASE_GENES.values():
@@ -212,14 +213,17 @@ def create_app(config: Optional[dict] = None) -> Flask:
 
         query = request.args.get("q", "").strip().lower()
         results = sorted(static)
+        
         if query:
             results = [d for d in results if query in d.lower()]
             dynamic = []
             if therapeutic_engine and getattr(therapeutic_engine, "disease_db_client", None):
                 try:
                     dynamic = therapeutic_engine.disease_db_client.search_diseases(query)
-                except Exception as e:  # pragma: no cover - network errors
-                    app.logger.warning(f"Dynamic disease search failed: {e}")
+                    app.logger.info(f"Found {len(dynamic)} dynamic diseases for query '{query}'")
+                except Exception as e:
+                    app.logger.warning(f"Dynamic disease search failed for query '{query}': {e}")
+                    # Trotzdem mit statischen Ergebnissen fortfahren
 
             combined = {}
             for name in results + dynamic:
@@ -227,6 +231,7 @@ def create_app(config: Optional[dict] = None) -> Flask:
                 if key not in combined:
                     combined[key] = name
             results = sorted(combined.values())
+        
         return jsonify({"diseases": results})
 
     @app.route("/api/disease_info", methods=["GET"])
@@ -344,6 +349,11 @@ def create_app(config: Optional[dict] = None) -> Flask:
         return render_template("error.html", 
                              error_code=500, 
                              error_message="Internal server error"), 500
+    
+    @app.route("/info")
+    def info():
+        """Render the information page about genetic enhancement."""
+        return render_template("info.html")
     
     return app
 
