@@ -186,6 +186,13 @@ def test_therapeutic_page_contains_failure_message():
     assert gv is not None
     assert "display:none" in (gv.get("style", "").replace(" ", "").lower())
 
+    # dropdown list for dynamic disease search should be present
+    assert soup.find(id="disease-results") is not None
+
+    loading = soup.find(id="gene-loading")
+    assert loading is not None
+    assert "display:none" in (loading.get("style", "").replace(" ", "").lower())
+
     assert soup.find("button", id="confirm-disease") is not None
 
     # search field/button should be present for finding diseases dynamically
