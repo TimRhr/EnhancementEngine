@@ -50,3 +50,35 @@ def test_risk_calculator_dynamic(monkeypatch):
     assert pytest.approx(risk.odds_ratio) == 1.5
     assert risk.population_frequency == 0.1
     assert risk.penetrance > 0
+
+
+def test_disease_db_client_methods(monkeypatch, tmp_path):
+    """Ensure key methods exist and are callable."""
+
+    def fake_esearch(db, term, retmax=20):
+        return DummyHandle("search")
+
+    def fake_esummary(db, id):
+        return DummyHandle("summary")
+
+    def fake_read(handle, validate=False):
+        return {"IdList": []} if handle.name == "search" else []
+
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esearch",
+        fake_esearch,
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.esummary",
+        fake_esummary,
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.Entrez.read",
+        fake_read,
+    )
+
+    client = DiseaseDatabaseClient("test@example.com", cache_dir=str(tmp_path))
+    assert hasattr(client, "search_diseases")
+    assert callable(client.search_diseases)
+    assert hasattr(client, "fetch_associated_genes")
+    assert callable(client.fetch_associated_genes)
