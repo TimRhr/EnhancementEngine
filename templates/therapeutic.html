@@ -85,11 +85,9 @@
             </div>
             <div class="mb-3">
                 <label for="variant" class="form-label">Variant</label>
-                <div class="dropdown">
-                    <input type="text" class="form-control" id="variant" name="variant"
-                           autocomplete="off">
-                    <ul class="dropdown-menu" id="variant-menu"></ul>
-                </div>
+                <input list="variant-list" type="text" class="form-control" id="variant" name="variant" autocomplete="off">
+                <datalist id="variant-list"></datalist>
+                <ul class="dropdown-menu" id="variant-menu"></ul>
             </div>
         </div>
         <div class="mb-3">

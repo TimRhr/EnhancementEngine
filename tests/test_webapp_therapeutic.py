@@ -186,6 +186,9 @@ def test_therapeutic_page_contains_failure_message():
     assert gv is not None
     assert "display:none" in (gv.get("style", "").replace(" ", "").lower())
 
+    # dropdown menu for variants should be present
+    assert soup.find(id="variant-menu") is not None
+
     # dropdown list for dynamic disease search should be present
     assert soup.find(id="disease-results") is not None
 
