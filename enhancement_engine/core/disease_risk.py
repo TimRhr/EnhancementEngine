@@ -17,6 +17,7 @@ from ..models.data_classes import GeneInfo, VariantInfo, RiskLevel
 from ..models.therapeutic_data_classes import (
     DiseaseRisk, DiseaseCategory, PatientStratification
 )
+from .disease_db import DiseaseDatabaseClient
 from ..models.disease_constants import (
     DISEASE_GENES, POPULATION_FREQUENCIES, DISEASE_SCORING_SYSTEMS
 )
@@ -475,12 +476,13 @@ class MultiGeneRiskCalculator:
 
 class DiseaseRiskCalculator:
     """Main disease risk calculator integrating all components."""
-    
-    def __init__(self):
+
+    def __init__(self, disease_client: Optional["DiseaseDatabaseClient"] = None):
         """Initialize disease risk calculator."""
         self.population_calculator = PopulationGeneticsCalculator()
         self.multigene_calculator = MultiGeneRiskCalculator()
         self.hardy_weinberg = HardyWeinbergCalculator()
+        self.disease_client = disease_client
         self.logger = logging.getLogger(__name__)
     
     def calculate_disease_risk(self, gene: str, variant: str, patient_data: Dict[str, Any],
@@ -498,24 +500,33 @@ class DiseaseRiskCalculator:
             DiseaseRisk object
         """
         try:
-            # Get variant data
+            # Get variant data from constants
             gene_data = None
             for category in DISEASE_GENES.values():
                 if gene in category:
                     gene_data = category[gene]
                     break
-            
-            if not gene_data:
-                raise RiskCalculationError(f"Gene {gene} not found in disease database")
-            
-            disease_data = gene_data.get("disease_associations", {}).get(disease, {})
-            if not disease_data:
-                raise RiskCalculationError(f"No {disease} association for {gene}")
-            
-            # Get basic risk parameters
-            odds_ratio = disease_data.get("odds_ratio", 1.0)
-            population_frequency = disease_data.get("population_frequency", 0.0)
-            penetrance = disease_data.get("penetrance", 0.1)
+
+            disease_data = {}
+            if gene_data:
+                disease_data = gene_data.get("disease_associations", {}).get(disease, {})
+
+            # Fallback to dynamic client if no data
+            if not gene_data or not disease_data:
+                if self.disease_client:
+                    dynamic = self.disease_client.fetch_disease_info(gene, variant, disease)
+                    if dynamic:
+                        odds_ratio = dynamic.get("odds_ratio", 1.0)
+                        population_frequency = dynamic.get("allele_frequency", 0.0)
+                        penetrance = dynamic.get("penetrance", 0.1)
+                    else:
+                        raise RiskCalculationError(f"No data for {gene} {variant}")
+                else:
+                    raise RiskCalculationError(f"Gene {gene} not found in disease database")
+            else:
+                odds_ratio = disease_data.get("odds_ratio", 1.0)
+                population_frequency = disease_data.get("population_frequency", 0.0)
+                penetrance = disease_data.get("penetrance", 0.1)
             
             # Adjust for patient-specific factors
             population = patient_data.get("ethnicity", "european")
