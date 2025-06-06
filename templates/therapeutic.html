@@ -64,6 +64,7 @@
             <label for="gene" class="form-label">Gene Symbol</label>
             <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required autocomplete="off">
             <datalist id="gene-list"></datalist>
+            <div id="gene-message" class="form-text text-danger"></div>
         </div>
         <div class="mb-3">
             <label for="variant" class="form-label">Variant</label>
@@ -111,14 +112,23 @@
     async function updateGeneList(disease) {
         const geneList = document.getElementById('gene-list');
         const variantList = document.getElementById('variant-list');
+        const messageEl = document.getElementById('gene-message');
         geneList.innerHTML = '';
         variantList.innerHTML = '';
+        if (messageEl) messageEl.textContent = '';
         if (!disease) return;
+        if (messageEl) messageEl.textContent = 'Loading...';
         const resp = await fetch(`/api/disease_info?disease=${encodeURIComponent(disease)}`);
+        if (messageEl) messageEl.textContent = '';
         if (!resp.ok) return;
         const data = await resp.json();
         diseaseGeneData = data.variants || {};
-        (data.genes || []).forEach(g => {
+        const genes = data.genes || [];
+        if (genes.length === 0) {
+            if (messageEl) messageEl.textContent = `No genes found for '${disease}'`;
+            return;
+        }
+        genes.forEach(g => {
             const opt = document.createElement('option');
             opt.value = g;
             geneList.appendChild(opt);

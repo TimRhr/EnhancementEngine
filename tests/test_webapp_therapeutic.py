@@ -144,3 +144,11 @@ def test_disease_info_api_synonym_fallback(monkeypatch):
     assert ("fetch", "unknown") in dummy.calls
     assert ("search", "unknown") in dummy.calls
     assert ("fetch", "synonym") in dummy.calls
+
+
+def test_therapeutic_page_contains_failure_message():
+    client = app.test_client()
+    resp = client.get("/therapeutic")
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert "No genes found for" in html
