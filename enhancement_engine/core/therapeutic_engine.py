@@ -12,6 +12,7 @@ from pathlib import Path
 
 from .engine import EnhancementEngine
 from .disease_risk import DiseaseRiskCalculator, MultiGeneRiskCalculator
+from .disease_db import DiseaseDatabaseClient
 from .therapeutic_crispr import TherapeuticCRISPRDesigner
 from .therapeutic_safety import TherapeuticSafetyAnalyzer
 from .database import GeneDatabase
@@ -79,9 +80,10 @@ class TherapeuticEnhancementEngine:
         try:
             # Core enhancement engine for basic functionality
             self.base_engine = EnhancementEngine(self.email)
-            
+
             # Therapeutic-specific components
-            self.disease_risk_calculator = DiseaseRiskCalculator()
+            self.disease_db_client = DiseaseDatabaseClient(self.email)
+            self.disease_risk_calculator = DiseaseRiskCalculator(self.disease_db_client)
             self.multigene_risk_calculator = MultiGeneRiskCalculator()
             self.therapeutic_crispr_designer = TherapeuticCRISPRDesigner()
             self.therapeutic_safety_analyzer = TherapeuticSafetyAnalyzer()
