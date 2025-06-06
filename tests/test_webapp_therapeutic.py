@@ -188,7 +188,7 @@ def test_disease_info_api_clinvar_synonym(monkeypatch, tmp_path):
         calls.append(("esummary", id))
         return DummyHandle(f"summary_{id}")
 
-    def fake_read(handle):
+    def fake_read(handle, validate=False):
         if handle.name == "search_cancer":
             return {"IdList": []}
         if handle.name == "search_carcinoma":
