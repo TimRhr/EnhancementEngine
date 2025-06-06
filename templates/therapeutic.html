@@ -75,7 +75,12 @@
         </div>
         <div class="mb-3">
             <label for="disease" class="form-label">Disease</label>
-            <input list="disease-list" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
+            <div class="input-group">
+                <input list="disease-list" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
+                <button type="button" class="btn btn-outline-secondary" id="search-disease">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
             <datalist id="disease-list"></datalist>
             <button type="button" id="confirm-disease" class="btn btn-secondary mt-2">
                 Load Disease Info
@@ -123,7 +128,6 @@
     }
 
     let diseaseGeneData = {};
-    let diseaseTimeout;
 
     async function updateGeneList(disease) {
         const geneList = document.getElementById('gene-list');
@@ -182,12 +186,10 @@
                 }
             });
         }
-        diseaseInput.addEventListener('input', () => {
-            clearTimeout(diseaseTimeout);
-            diseaseTimeout = setTimeout(() => {
-                updateDiseaseList(diseaseInput.value);
-            }, 100);
-        });
+        const searchBtn = document.getElementById('search-disease');
+        searchBtn.addEventListener('click', () =>
+            updateDiseaseList(diseaseInput.value.trim())
+        );
         geneInput.addEventListener('change', () => {
             updateVariantList(geneInput.value);
         });
