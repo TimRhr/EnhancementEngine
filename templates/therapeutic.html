@@ -74,6 +74,9 @@
             <button type="button" id="confirm-disease" class="btn btn-secondary mt-2">
                 Load Disease Info
             </button>
+            <div id="gene-loading" class="mt-2" style="display:none;">
+                <span class="loading-spinner"></span> Loading gene data...
+            </div>
         </div>
         <div id="gene-variant-section" style="display:none;">
             <div class="mb-3">
@@ -143,6 +146,8 @@
         const geneList = document.getElementById('gene-list');
         const variantList = document.getElementById('variant-list');
         const messageEl = document.getElementById('gene-message');
+        const loadingEl = document.getElementById('gene-loading');
+        const geneSection = document.getElementById('gene-variant-section');
         geneList.innerHTML = '';
         variantList.innerHTML = '';
         if (messageEl) messageEl.textContent = '';
@@ -150,18 +155,25 @@
         if (messageEl) messageEl.textContent = 'Loading...';
         const resp = await fetch(`/api/disease_info?disease=${encodeURIComponent(disease)}`);
         if (messageEl) messageEl.textContent = '';
-        if (!resp.ok) return;
+        if (!resp.ok) {
+            if (loadingEl) loadingEl.style.display = 'none';
+            return;
+        }
         const data = await resp.json();
         if (data.error) {
+            if (loadingEl) loadingEl.style.display = 'none';
             alert(data.error);
             return;
         }
         diseaseGeneData = data.variants || {};
         const genes = data.genes || [];
+        if (loadingEl) loadingEl.style.display = 'none';
         if (genes.length === 0) {
+            if (geneSection) geneSection.style.display = 'none';
             if (messageEl) messageEl.textContent = `No genes found for '${disease}'`;
             return;
         }
+        if (geneSection) geneSection.style.display = 'block';
         genes.forEach(g => {
             const opt = document.createElement('option');
             opt.value = g;
@@ -191,8 +203,12 @@
             confirmBtn.addEventListener('click', () => {
                 const disease = diseaseInput.value.trim();
                 if (disease) {
-                    updateGeneList(disease);
-                    geneVariantSection.style.display = 'block';
+                    const loadingEl = document.getElementById('gene-loading');
+                    if (loadingEl) loadingEl.style.display = 'block';
+                    if (geneVariantSection) geneVariantSection.style.display = 'none';
+                    updateGeneList(disease).then(() => {
+                        // handled inside updateGeneList
+                    });
                 }
             });
         }
