@@ -188,6 +188,9 @@ def test_therapeutic_page_contains_failure_message():
 
     assert soup.find("button", id="confirm-disease") is not None
 
+    # search field/button should be present for finding diseases dynamically
+    assert soup.find(id="search-disease") is not None
+
     assert "No genes found for" in html
 
     
