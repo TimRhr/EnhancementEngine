@@ -234,6 +234,23 @@ def create_app(config: Optional[dict] = None) -> Flask:
         
         return jsonify({"diseases": results})
 
+    @app.route("/api/gene_variants", methods=["GET"])
+    def api_gene_variants():
+        """Return available variants for a given gene."""
+        if not engine:
+            return jsonify({"error": "Enhancement Engine not available"}), 503
+
+        gene = request.args.get("gene", "").strip()
+        if not gene:
+            return jsonify({"variants": []})
+
+        try:
+            info = engine.validate_gene_input(gene)
+            return jsonify({"variants": info.get("available_variants", [])})
+        except Exception as exc:
+            app.logger.error(f"Gene variant lookup failed: {exc}")
+            return jsonify({"error": "lookup failed"}), 500
+
     @app.route("/api/disease_info", methods=["GET"])
     def api_disease_info():
         """Return genes and variants associated with a disease."""

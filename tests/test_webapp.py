@@ -13,6 +13,9 @@ def test_index_page():
     client = app.test_client()
     resp = client.get("/")
     assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert 'id="search-gene"' in html
+    assert 'id="variant-menu"' in html
 
 
 def test_analyze_route(monkeypatch):
@@ -48,3 +51,16 @@ def test_analyze_route(monkeypatch):
     assert resp.status_code in (200, 405)
     if resp.status_code == 200:
         assert called['gene'] == "COMT"
+
+
+def test_gene_variants_api(monkeypatch):
+    monkeypatch.setattr(
+        EnhancementEngine,
+        "validate_gene_input",
+        lambda self, gene_name: {"available_variants": ["v1", "v2"]},
+    )
+    client = app.test_client()
+    resp = client.get("/api/gene_variants?gene=TEST")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["variants"] == ["v1", "v2"]
