@@ -62,17 +62,17 @@
     <form method="post">
         <div class="mb-3">
             <label for="gene" class="form-label">Gene Symbol</label>
-            <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required>
+            <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required autocomplete="off">
             <datalist id="gene-list"></datalist>
         </div>
         <div class="mb-3">
             <label for="variant" class="form-label">Variant</label>
-            <input list="variant-list" type="text" class="form-control" id="variant" name="variant">
+            <input list="variant-list" type="text" class="form-control" id="variant" name="variant" autocomplete="off">
             <datalist id="variant-list"></datalist>
         </div>
         <div class="mb-3">
             <label for="disease" class="form-label">Disease</label>
-            <input list="disease-list" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis">
+            <input list="disease-list" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
             <datalist id="disease-list"></datalist>
         </div>
         <div class="mb-3">

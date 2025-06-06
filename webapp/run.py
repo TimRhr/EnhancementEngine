@@ -231,13 +231,24 @@ def create_app(config: Optional[dict] = None) -> Flask:
 
         genes = []
         variants = {}
+        found = False
         for category in DISEASE_GENES.values():
             for gene, info in category.items():
                 assoc = info.get("disease_associations", {})
                 if disease in assoc:
+                    found = True
                     genes.append(gene)
                     vars_for_gene = list(info.get("pathogenic_variants", {}).keys())
                     variants[gene] = vars_for_gene
+
+        if not found and therapeutic_engine and getattr(therapeutic_engine, "disease_db_client", None):
+            try:
+                dynamic = therapeutic_engine.disease_db_client.fetch_associated_genes(disease)
+                if dynamic:
+                    genes = list(dynamic.keys())
+                    variants = dynamic
+            except Exception as exc:  # pragma: no cover - network errors
+                app.logger.warning(f"Dynamic disease info failed: {exc}")
 
         return jsonify({"genes": genes, "variants": variants})
 

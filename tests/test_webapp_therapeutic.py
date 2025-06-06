@@ -79,3 +79,28 @@ def test_disease_info_api(monkeypatch):
     data = resp.get_json()
     assert set(data["genes"]) == {"G1"}
     assert set(data["variants"]["G1"]) == {"v1", "v2"}
+
+
+def test_disease_info_api_dynamic(monkeypatch):
+    from enhancement_engine.webapp import run as run_module
+
+    monkeypatch.setattr(run_module, "DISEASE_GENES", {})
+
+    class DummyClient:
+        def fetch_associated_genes(self, disease, max_results=5):
+            return {"DG": ["v1", "v2"]}
+
+    if getattr(run_module, "therapeutic_engine", None):
+        monkeypatch.setattr(
+            run_module.therapeutic_engine,
+            "disease_db_client",
+            DummyClient(),
+            raising=False,
+        )
+
+    client = app.test_client()
+    resp = client.get("/api/disease_info?disease=new")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["genes"] == ["DG"]
+    assert data["variants"]["DG"] == ["v1", "v2"]
