@@ -89,6 +89,7 @@ class TherapeuticPopulationSimulator:
                 }
             }
         }
+
     
     def _load_disease_models(self) -> None:
         """Load disease progression and epidemiological models."""
