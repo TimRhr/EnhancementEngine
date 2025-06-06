@@ -3,7 +3,7 @@ Enhancement Engine - Comprehensive genetic enhancement simulation and analysis.
 
 This package provides tools for:
 - CRISPR guide design and optimization
-- Off-target prediction and safety assessment  
+- Off-target prediction and safety assessment
 - Enhancement effect simulation
 - Comprehensive reporting and analysis
 
@@ -17,21 +17,17 @@ __email__ = "tim.roehr@outlook.com"
 
 # Core imports for easy access
 from .core.engine import EnhancementEngine
+from .core.therapeutic_engine import TherapeuticEnhancementEngine
 from .models.data_classes import (
     GeneInfo,
-    GuideRNA, 
+    GuideRNA,
     EnhancementReport,
     SafetyScore,
-    VariantEffect
+    VariantEffect,
 )
 
 # Version info
-VERSION_INFO = {
-    "major": 0,
-    "minor": 1,
-    "patch": 0,
-    "release": "alpha"
-}
+VERSION_INFO = {"major": 0, "minor": 1, "patch": 0, "release": "alpha"}
 
 # Default configuration
 DEFAULT_CONFIG = {
@@ -40,17 +36,18 @@ DEFAULT_CONFIG = {
     "cache_dir": "data/cached_sequences",
     "log_level": "INFO",
     "default_organism": "homo sapiens",
-    "default_cas_type": "cas9"
+    "default_cas_type": "cas9",
 }
 
 __all__ = [
     "EnhancementEngine",
-    "GeneInfo", 
+    "TherapeuticEnhancementEngine",
+    "GeneInfo",
     "GuideRNA",
     "EnhancementReport",
     "SafetyScore",
     "VariantEffect",
     "__version__",
     "VERSION_INFO",
-    "DEFAULT_CONFIG"
+    "DEFAULT_CONFIG",
 ]
