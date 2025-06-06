@@ -5,7 +5,7 @@ This module contains comprehensive databases of disease-associated genes,
 their variants, and therapeutic intervention strategies.
 """
 
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 
 # Disease-associated genes database
 DISEASE_GENES = {
@@ -214,6 +214,210 @@ DISEASE_GENES = {
             "therapeutic_approaches": ["knockout", "silencing"]
         }
     }
+}
+
+# Reference HLA allele information used by the HLA analyzer
+HLA_ALLELE_DATABASE = {
+    "DRB1*01:01": {
+        "sequence": "SEQ_01:01",
+        "shared_epitope": "QKRAA",
+        "risk_category": "high",
+        "population_frequencies": {"European": 0.08, "Asian": 0.01, "African": 0.02},
+    },
+    "DRB1*04:01": {
+        "sequence": "SEQ_04:01",
+        "shared_epitope": "QKRAA",
+        "risk_category": "very_high",
+        "population_frequencies": {"European": 0.12, "Asian": 0.03, "African": 0.01},
+    },
+    "DRB1*04:04": {
+        "sequence": "SEQ_04:04",
+        "shared_epitope": "QKRAA",
+        "risk_category": "high",
+        "population_frequencies": {"European": 0.03, "Asian": 0.15, "African": 0.01},
+    },
+    "DRB1*04:05": {
+        "sequence": "SEQ_04:05",
+        "shared_epitope": "QRRAA",
+        "risk_category": "moderate",
+        "population_frequencies": {"European": 0.05, "Asian": 0.02, "African": 0.08},
+    },
+    "DRB1*03:01": {
+        "sequence": "SEQ_03:01",
+        "shared_epitope": None,
+        "risk_category": "protective",
+        "population_frequencies": {"European": 0.15, "Asian": 0.25, "African": 0.20},
+    },
+    "DRB1*13:01": {
+        "sequence": "SEQ_13:01",
+        "shared_epitope": None,
+        "risk_category": "neutral",
+        "population_frequencies": {"European": 0.12, "Asian": 0.08, "African": 0.15},
+    },
+    "DRB1*15:01": {
+        "sequence": "SEQ_15:01",
+        "shared_epitope": None,
+        "risk_category": "protective",
+        "population_frequencies": {"European": 0.18, "Asian": 0.05, "African": 0.25},
+    },
+}
+
+# Shared epitope definitions
+SHARED_EPITOPES = {
+    "SE1": {
+        "sequence": "QKRAA",
+        "positions": (70, 74),
+        "risk_weight": 1.0,
+        "alleles": ["DRB1*01:01", "DRB1*04:01", "DRB1*04:04"],
+    },
+    "SE2": {
+        "sequence": "QRRAA",
+        "positions": (70, 74),
+        "risk_weight": 0.6,
+        "alleles": ["DRB1*04:05"],
+    },
+    "SE3": {
+        "sequence": "RRRAA",
+        "positions": (70, 74),
+        "risk_weight": 0.4,
+        "alleles": ["DRB1*04:08"],
+    },
+}
+
+# Gene interaction network used by the combination therapy module
+GENE_INTERACTIONS = {
+    "PTPN22": {
+        "HLA-DRB1": {"type": "epistatic", "strength": 0.7},
+        "STAT4": {"type": "additive", "strength": 0.4},
+        "TNFAIP3": {"type": "compensatory", "strength": 0.3},
+    },
+    "HLA-DRB1": {
+        "PTPN22": {"type": "epistatic", "strength": 0.7},
+        "STAT4": {"type": "modifying", "strength": 0.5},
+        "PADI4": {"type": "synergistic", "strength": 0.6},
+    },
+    "STAT4": {
+        "PTPN22": {"type": "additive", "strength": 0.4},
+        "HLA-DRB1": {"type": "modifying", "strength": 0.5},
+        "IRF4": {"type": "pathway", "strength": 0.8},
+    },
+}
+
+# Synergy data for combination therapy
+THERAPEUTIC_SYNERGIES = {
+    "pairwise": {
+        ("PTPN22", "HLA-DRB1"): {
+            "synergy_type": "multiplicative",
+            "synergy_factor": 1.8,
+            "confidence": 0.8,
+            "mechanism": "Combined T-cell regulation and antigen presentation",
+        },
+        ("HLA-DRB1", "STAT4"): {
+            "synergy_type": "additive_plus",
+            "synergy_factor": 1.3,
+            "confidence": 0.6,
+            "mechanism": "Antigen presentation and T-cell differentiation",
+        },
+        ("PTPN22", "STAT4"): {
+            "synergy_type": "additive",
+            "synergy_factor": 1.2,
+            "confidence": 0.7,
+            "mechanism": "Complementary T-cell regulation pathways",
+        },
+    },
+    "multi_gene": {
+        ("PTPN22", "HLA-DRB1", "STAT4"): {
+            "synergy_factor": 2.5,
+            "complexity_penalty": 0.3,
+            "coordination_requirement": "high",
+        }
+    },
+}
+
+# High level therapeutic target summary used by delivery system
+THERAPEUTIC_TARGETS = {
+    "PTPN22": {"strategies": ["correction", "silencing"]},
+    "HLA-DRB1": {"strategies": ["replacement", "targeted_mutagenesis"]},
+    "STAT4": {"strategies": ["silencing", "correction"]},
+    "TNFAIP3": {"strategies": ["activation", "correction"]},
+    "LDLR": {"strategies": ["correction", "replacement"]},
+    "PCSK9": {"strategies": ["knockout", "silencing"]},
+}
+
+# Default validation criteria for therapeutic strategies
+VALIDATION_CRITERIA = {
+    "base_editing": {
+        "min_efficiency": 0.6,
+        "max_off_targets": 3,
+        "safety_threshold": 70.0,
+        "efficacy_threshold": 0.5,
+        "population_benefit_threshold": 0.3,
+    },
+    "gene_replacement": {
+        "min_efficiency": 0.4,
+        "max_off_targets": 5,
+        "safety_threshold": 80.0,
+        "efficacy_threshold": 0.7,
+        "population_benefit_threshold": 0.5,
+    },
+    "gene_silencing": {
+        "min_efficiency": 0.7,
+        "max_off_targets": 2,
+        "safety_threshold": 75.0,
+        "efficacy_threshold": 0.4,
+        "population_benefit_threshold": 0.2,
+    },
+}
+
+# Population genetics data and disease epidemiology
+POPULATION_GENETICS = {
+    "demographics": {
+        "total_population": 330000000,
+        "age_distribution": {"0-17": 0.22, "18-34": 0.23, "35-54": 0.25, "55-74": 0.20, "75+": 0.10},
+        "sex_distribution": {"male": 0.49, "female": 0.51},
+        "ethnicity_distribution": {
+            "caucasian": 0.60,
+            "hispanic": 0.18,
+            "african_american": 0.13,
+            "asian": 0.06,
+            "other": 0.03,
+        },
+    },
+    "genetic_data": {
+        "rheumatoid_arthritis": {
+            "overall_prevalence": 0.01,
+            "genetic_risk_distribution": {"low": 0.65, "moderate": 0.25, "high": 0.08, "very_high": 0.02},
+            "heritability": 0.60,
+            "environmental_factors": {
+                "smoking": {"prevalence": 0.15, "risk_increase": 2.0},
+                "infections": {"prevalence": 0.30, "risk_increase": 1.5},
+            },
+        }
+    },
+}
+
+DISEASE_EPIDEMIOLOGY = {
+    "rheumatoid_arthritis": {
+        "incidence_rate_per_100k": 50,
+        "age_incidence_curve": {
+            "20-29": 0.1,
+            "30-39": 0.15,
+            "40-49": 0.25,
+            "50-59": 0.30,
+            "60-69": 0.20,
+        },
+        "progression_model": {
+            "remission_rate": 0.20,
+            "mild_to_moderate": 0.40,
+            "moderate_to_severe": 0.30,
+            "mortality_increase": 1.3,
+        },
+        "economic_burden": {
+            "annual_direct_cost": 15000,
+            "annual_indirect_cost": 12000,
+            "qaly_loss_per_year": 0.3,
+        },
+    },
 }
 
 # Therapeutic delivery methods for different tissues
