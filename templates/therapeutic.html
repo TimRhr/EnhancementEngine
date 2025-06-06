@@ -109,6 +109,12 @@
             opt.value = d;
             list.appendChild(opt);
         });
+        const diseaseInput = document.getElementById('disease');
+        if (document.activeElement === diseaseInput) {
+            diseaseInput.blur();
+            diseaseInput.focus();
+            diseaseInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
     }
 
     let diseaseGeneData = {};
