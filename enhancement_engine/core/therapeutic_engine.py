@@ -963,17 +963,60 @@ KEY RECOMMENDATIONS:
 
 
 # Additional helper classes that would be imported
+# Additional helper classes that would be imported
 class PatientStratificationEngine:
-    """Placeholder for patient stratification engine."""
+    """Basic engine for stratifying patients for therapy."""
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+
+    def stratify(
+        self, patient_data: Dict[str, Any], disease_risk: DiseaseRisk
+    ) -> PatientStratification:
+        """Create a simple stratification record."""
+        severity = patient_data.get("disease_severity", "moderate")
+        priority = min(1.0, disease_risk.odds_ratio / 10.0)
+        if severity == "severe":
+            priority = max(priority, 0.8)
+        return PatientStratification(
+            patient_genotype=patient_data.get("genotypes", {}),
+            disease_severity=severity,
+            prior_treatments=patient_data.get("prior_treatments", []),
+            comorbidities=patient_data.get("comorbidities", []),
+            ethnicity=patient_data.get("ethnicity", "unknown"),
+            age=patient_data.get("age", 0),
+            sex=patient_data.get("sex", "unknown"),
+            treatment_priority=priority,
+        )
+
 
 class ClinicalAssessmentEngine:
-    """Placeholder for clinical assessment engine."""
+    """Assess basic clinical features."""
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
+    def assess(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Return a lightweight assessment summary."""
+        assessment = {
+            "disease_severity": patient_data.get("disease_severity", "unknown"),
+            "comorbidities": patient_data.get("comorbidities", []),
+        }
+        self.logger.debug("Clinical assessment generated: %s", assessment)
+        return assessment
+
+
 class TherapeuticSimulationEngine:
-    """Placeholder for therapeutic simulation engine."""
+    """Minimal therapeutic simulation engine."""
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+
+
+    def run(self, strategy: CorrectionStrategy) -> Dict[str, float]:
+        """Simulate a strategy and return mock metrics."""
+        complexity = getattr(strategy, "complexity_score", 0.5)
+        return {
+            "predicted_success_rate": max(0.0, 1.0 - complexity * 0.5),
+            "predicted_off_target_rate": complexity * 0.01,
+        }

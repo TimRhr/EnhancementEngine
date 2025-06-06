@@ -22,7 +22,7 @@ from ..models.therapeutic_data_classes import (
     ValidationResult, ClinicalReadiness, PopulationModel,
     SafetyValidation, EfficacyPrediction, TherapeuticStrategy
 )
-from ..models.disease_constants import VALIDATION_CRITERIA, SAFETY_THRESHOLDS
+from ..models.disease_constants import THERAPEUTIC_SAFETY_THRESHOLDS
 
 
 @dataclass
