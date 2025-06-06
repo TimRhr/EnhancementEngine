@@ -111,8 +111,16 @@
                                 <label for="gene" class="form-label">
                                     <i class="fas fa-atom me-1"></i>Gene Symbol
                                 </label>
-                                <input type="text" class="form-control" id="gene" name="gene"
-                                       placeholder="e.g., COMT, BDNF, ACTN3" required autocomplete="off">
+                                <div class="dropdown">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="gene" name="gene"
+                                               placeholder="e.g., COMT, BDNF, ACTN3" required autocomplete="off">
+                                        <button type="button" class="btn btn-outline-secondary" id="search-gene">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                    <ul class="dropdown-menu" id="variant-menu"></ul>
+                                </div>
                                 <div class="invalid-feedback">
                                     Please enter a gene symbol.
                                 </div>
