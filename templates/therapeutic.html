@@ -66,7 +66,8 @@
                 <div class="input-group">
                     <input type="text" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
                     <button type="button" class="btn btn-outline-secondary" id="search-disease">
-                        <i class="fas fa-search"></i>
+                        <i id="search-icon" class="fas fa-search"></i>
+                        <span class="loading-spinner" id="search-spinner" style="display:none;"></span>
                     </button>
                 </div>
                 <ul class="dropdown-menu" id="disease-results"></ul>
@@ -118,6 +119,10 @@
     async function updateDiseaseList(query) {
         const menu = document.getElementById('disease-results');
         menu.innerHTML = '';
+        const searchIcon = document.getElementById('search-icon');
+        const searchSpinner = document.getElementById('search-spinner');
+        if (searchIcon) searchIcon.style.display = 'none';
+        if (searchSpinner) searchSpinner.style.display = 'inline-block';
         const diseases = await fetchDiseases(query);
         const diseaseInput = document.getElementById('disease');
         const searchBtn = document.getElementById('search-disease');
@@ -142,6 +147,8 @@
                 menu.appendChild(li);
             });
         }
+        if (searchSpinner) searchSpinner.style.display = 'none';
+        if (searchIcon) searchIcon.style.display = 'inline-block';
         bootstrap.Dropdown.getOrCreateInstance(searchBtn).show();
     }
 
@@ -202,7 +209,6 @@
         const geneInput = document.getElementById('gene');
         const geneVariantSection = document.getElementById('gene-variant-section');
         const confirmBtn = document.getElementById('confirm-disease');
-        updateDiseaseList('');
         if (geneVariantSection) geneVariantSection.style.display = 'none';
         if (confirmBtn) {
             confirmBtn.addEventListener('click', () => {
