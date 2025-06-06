@@ -19,7 +19,7 @@ def test_fetch_disease_info_cached(monkeypatch, tmp_path):
         calls["esummary"] += 1
         return DummyHandle("summary")
 
-    def fake_read(handle):
+    def fake_read(handle, validate=False):
         if handle.name == "search":
             return {"IdList": ["1"]}
         return [{"OddsRatio": "2.0", "AlleleFrequency": "0.05", "Penetrance": "0.1"}]

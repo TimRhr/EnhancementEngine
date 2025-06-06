@@ -22,6 +22,10 @@ class DiseaseDatabaseClient:
         self.logger = logging.getLogger(__name__)
         self.cache = CacheManager(cache_dir)
 
+    def _read(self, handle):
+        """Wrapper around ``Entrez.read`` disabling XML validation."""
+        return Entrez.read(handle, validate=False)
+
     def fetch_disease_info(
         self, gene: str, variant: str, disease: Optional[str] = None
     ) -> Optional[Dict[str, float]]:
@@ -43,13 +47,13 @@ class DiseaseDatabaseClient:
 
         try:
             search_handle = Entrez.esearch(db="clinvar", term=query, retmax=1)
-            search_result = Entrez.read(search_handle)
+            search_result = self._read(search_handle)
             search_handle.close()
             ids = search_result.get("IdList", [])
             if not ids:
                 return None
             summary_handle = Entrez.esummary(db="clinvar", id=ids[0])
-            summary = Entrez.read(summary_handle)
+            summary = self._read(summary_handle)
             summary_handle.close()
             doc = summary[0] if summary else {}
             data = {
@@ -72,13 +76,13 @@ class DiseaseDatabaseClient:
 
         try:
             handle = Entrez.esearch(db="medgen", term=term, retmax=max_results)
-            result = Entrez.read(handle)
+            result = self._read(handle)
             handle.close()
             ids = result.get("IdList", [])
             names = []
             for did in ids:
                 sum_handle = Entrez.esummary(db="medgen", id=did)
-                summary = Entrez.read(sum_handle)
+                summary = self._read(sum_handle)
                 sum_handle.close()
                 if summary:
                     name = (
@@ -109,14 +113,14 @@ class DiseaseDatabaseClient:
 
         def query(term: str) -> List[str]:
             handle = Entrez.esearch(db="clinvar", term=term, retmax=max_results)
-            result = Entrez.read(handle)
+            result = self._read(handle)
             handle.close()
             return result.get("IdList", [])
 
         def collect(ids: List[str]) -> None:
             for cid in ids:
                 sum_handle = Entrez.esummary(db="clinvar", id=cid)
-                summary = Entrez.read(sum_handle)
+                summary = self._read(sum_handle)
                 sum_handle.close()
                 if not summary:
                     continue
