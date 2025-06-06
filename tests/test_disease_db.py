@@ -1,5 +1,6 @@
 import pytest
 import shutil
+import threading
 from enhancement_engine.core.disease_db import DiseaseDatabaseClient
 
 
@@ -177,6 +178,48 @@ def test_rate_limit(monkeypatch):
 
     assert sleep_calls[0] == pytest.approx(client.request_delay)
     assert sleep_calls[1] == pytest.approx(client.request_delay - 0.1)
+
+
+def test_rate_limit_thread_safety(monkeypatch):
+    """Concurrent calls should be spaced by request_delay."""
+
+    current = [0.0]
+    sleep_calls = []
+
+    def fake_time():
+        return current[0]
+
+    def fake_sleep(duration):
+        sleep_calls.append(duration)
+        current[0] += duration
+
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.time.time",
+        fake_time,
+    )
+    monkeypatch.setattr(
+        "enhancement_engine.core.disease_db.time.sleep",
+        fake_sleep,
+    )
+
+    client = DiseaseDatabaseClient("test@example.com", request_delay=0.5)
+
+    call_times = []
+
+    def call_limit():
+        client._rate_limit()
+        call_times.append(client._last_request)
+
+    threads = [threading.Thread(target=call_limit) for _ in range(2)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert len(sleep_calls) == 2
+    assert all(s >= client.request_delay for s in sleep_calls)
+    call_times.sort()
+    assert call_times[1] - call_times[0] >= client.request_delay
 
 
 def test_init_sets_api_key(monkeypatch):
