@@ -23,14 +23,20 @@ def build_parser() -> argparse.ArgumentParser:
     analyze = subparsers.add_parser("analyze", help="Analyze a single gene")
     analyze.add_argument("gene", help="Gene symbol to analyze")
     analyze.add_argument("-e", "--email", required=True, help="Email for NCBI access")
-    analyze.add_argument("-v", "--variant", default="enhancement_variant", help="Variant to analyze")
-    analyze.add_argument("-t", "--target-tissue", default="general", help="Target tissue")
+    analyze.add_argument(
+        "-v", "--variant", default="enhancement_variant", help="Variant to analyze"
+    )
+    analyze.add_argument(
+        "-t", "--target-tissue", default="general", help="Target tissue"
+    )
 
     # Batch analysis
     batch = subparsers.add_parser("batch", help="Analyze multiple genes")
     batch.add_argument("genes", help="Comma-separated genes or file path")
     batch.add_argument("-e", "--email", required=True, help="Email for NCBI access")
-    batch.add_argument("-v", "--variants", help="Comma-separated variants matching genes")
+    batch.add_argument(
+        "-v", "--variants", help="Comma-separated variants matching genes"
+    )
 
     # Cache management
     cache = subparsers.add_parser("cache", help="Cache management")
@@ -64,8 +70,10 @@ def main(argv: Optional[List[str]] = None) -> None:
             variants = [v.strip() for v in args.variants.split(",") if v.strip()]
         engine = EnhancementEngine(args.email)
         batch_report = engine.batch_analysis(genes, variants)
-        print(f"Successfully analyzed {batch_report.successful_analyses}/"
-              f"{batch_report.total_genes} genes")
+        print(
+            f"Successfully analyzed {batch_report.successful_analyses}/"
+            f"{batch_report.total_genes} genes"
+        )
         for gene, rep in batch_report.results.items():
             safety = rep.safety_assessment.overall_score
             feas = rep.feasibility_score

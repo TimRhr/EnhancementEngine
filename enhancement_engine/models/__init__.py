@@ -11,7 +11,7 @@ from .constants import *
 __all__ = [
     # Data classes
     "GeneInfo",
-    "GuideRNA", 
+    "GuideRNA",
     "EnhancementReport",
     "SafetyScore",
     "VariantEffect",
@@ -21,11 +21,10 @@ __all__ = [
     "EnhancementGain",
     "VariantPosition",
     "CodingRegion",
-    
     # Constants
     "ENHANCEMENT_GENES",
-    "PAM_PATTERNS", 
+    "PAM_PATTERNS",
     "CAS_TYPES",
     "NCBI_DATABASES",
-    "DEFAULT_PARAMETERS"
+    "DEFAULT_PARAMETERS",
 ]
