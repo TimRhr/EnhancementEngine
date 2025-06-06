@@ -22,6 +22,7 @@ from enhancement_engine.core.therapeutic_engine import (
     TherapeuticEnhancementEngine,
     TherapeuticEngineError,
 )
+from enhancement_engine.models.disease_constants import DISEASE_GENES
 
 
 def setup_logging() -> None:
@@ -192,6 +193,28 @@ def create_app(config: Optional[dict] = None) -> Flask:
         except Exception as e:
             app.logger.error(f"API error: {e}")
             return jsonify({"error": "Internal server error"}), 500
+
+    @app.route("/api/diseases", methods=["GET"])
+    def api_diseases():
+        """Return disease name suggestions."""
+        # gather static diseases
+        static = set()
+        for category in DISEASE_GENES.values():
+            for gene_info in category.values():
+                static.update(gene_info.get("disease_associations", {}).keys())
+
+        query = request.args.get("q", "").strip().lower()
+        results = sorted(static)
+        if query:
+            results = [d for d in results if query in d.lower()]
+            dynamic = []
+            if therapeutic_engine and getattr(therapeutic_engine, "disease_db_client", None):
+                try:
+                    dynamic = therapeutic_engine.disease_db_client.search_diseases(query)
+                except Exception as e:  # pragma: no cover - network errors
+                    app.logger.warning(f"Dynamic disease search failed: {e}")
+            results = sorted(set(results + dynamic))
+        return jsonify({"diseases": results})
 
     @app.route("/therapeutic", methods=["GET", "POST"])
     def therapeutic():

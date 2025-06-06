@@ -2,7 +2,7 @@ from __future__ import annotations
 """ClinVar/MedGen client for disease information."""
 
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from .database import CacheManager
 
@@ -62,3 +62,24 @@ class DiseaseDatabaseClient:
         except Exception as exc:  # pragma: no cover - network errors
             self.logger.warning(f"Failed to query ClinVar: {exc}")
             return None
+
+    def search_diseases(self, term: str, max_results: int = 5) -> List[str]:
+        """Search MedGen for disease names matching the term."""
+        try:
+            handle = Entrez.esearch(db="medgen", term=term, retmax=max_results)
+            result = Entrez.read(handle)
+            handle.close()
+            ids = result.get("IdList", [])
+            names = []
+            for did in ids:
+                sum_handle = Entrez.esummary(db="medgen", id=did)
+                summary = Entrez.read(sum_handle)
+                sum_handle.close()
+                if summary:
+                    name = summary[0].get("Description") or summary[0].get("Title") or summary[0].get("Name")
+                    if name:
+                        names.append(name)
+            return names
+        except Exception as exc:  # pragma: no cover - network errors
+            self.logger.warning(f"Failed to search diseases: {exc}")
+            return []
