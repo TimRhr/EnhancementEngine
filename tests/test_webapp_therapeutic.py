@@ -30,3 +30,22 @@ def test_therapeutic_route(monkeypatch):
     resp = client.get("/therapeutic/analyze?gene=PTPN22&variant=R620W&disease=ra")
     assert resp.status_code == 200
     assert called["args"][0] == "PTPN22"
+
+
+def test_disease_api(monkeypatch):
+    from enhancement_engine.core.disease_db import DiseaseDatabaseClient
+
+    def fake_search(self, term, max_results=5):
+        return ["dynamic"] if term else []
+
+    monkeypatch.setattr(DiseaseDatabaseClient, "search_diseases", fake_search)
+
+    client = app.test_client()
+    resp = client.get("/api/diseases")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert "rheumatoid_arthritis" in data["diseases"]
+
+    resp = client.get("/api/diseases?q=dyn")
+    data = resp.get_json()
+    assert "dynamic" in data["diseases"]
