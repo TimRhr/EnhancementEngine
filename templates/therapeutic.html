@@ -121,23 +121,28 @@
         const diseases = await fetchDiseases(query);
         const diseaseInput = document.getElementById('disease');
         const searchBtn = document.getElementById('search-disease');
-        diseases.forEach(d => {
+        if (diseases.length === 0) {
             const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.className = 'dropdown-item';
-            a.href = '#';
-            a.textContent = d;
-            a.addEventListener('click', e => {
-                e.preventDefault();
-                diseaseInput.value = d;
-                bootstrap.Dropdown.getOrCreateInstance(searchBtn).hide();
-            });
-            li.appendChild(a);
+            li.className = 'dropdown-item disabled';
+            li.textContent = 'No diseases found';
             menu.appendChild(li);
-        });
-        if (diseases.length > 0) {
-            bootstrap.Dropdown.getOrCreateInstance(searchBtn).show();
+        } else {
+            diseases.forEach(d => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.className = 'dropdown-item';
+                a.href = '#';
+                a.textContent = d;
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    diseaseInput.value = d;
+                    bootstrap.Dropdown.getOrCreateInstance(searchBtn).hide();
+                });
+                li.appendChild(a);
+                menu.appendChild(li);
+            });
         }
+        bootstrap.Dropdown.getOrCreateInstance(searchBtn).show();
     }
 
     let diseaseGeneData = {};
