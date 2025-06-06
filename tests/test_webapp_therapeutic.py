@@ -155,6 +155,15 @@ def test_disease_info_api_synonym_fallback(monkeypatch):
     assert ("fetch", "synonym") in dummy.calls
 
 
+
+def test_therapeutic_page_contains_failure_message():
+    client = app.test_client()
+    resp = client.get("/therapeutic")
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert "No genes found for" in html
+
+    
 def test_disease_info_api_clinvar_synonym(monkeypatch, tmp_path):
     import webapp.run as run_module
     from enhancement_engine.core import disease_db as db_mod
