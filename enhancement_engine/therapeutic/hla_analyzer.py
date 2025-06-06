@@ -118,6 +118,7 @@ class HLAAnalyzer:
                 }
             }
         }
+
     
     def _get_drb1_sequence(self, allele_code: str) -> str:
         """Get DRB1 protein sequence for allele (simplified)."""

@@ -120,6 +120,7 @@ class TherapeuticOffTargetAnalyzer:
             risks["integration_errors"] = self._assess_integration_error_risk(off_targets)
         
         return risks
+
     
     def _assess_autoimmune_off_target_risks(self, off_targets: List) -> Dict[str, float]:
         """Assess off-target risks specific to autoimmune diseases."""

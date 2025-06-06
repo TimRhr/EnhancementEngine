@@ -64,6 +64,7 @@ class TherapeuticEnhancementEngine:
         
         # Setup logging
         self.logger = logging.getLogger(__name__)
+
         
         # Initialize core components
         self._initialize_therapeutic_components()
@@ -1010,6 +1011,7 @@ class TherapeuticSimulationEngine:
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+
 
     def run(self, strategy: CorrectionStrategy) -> Dict[str, float]:
         """Simulate a strategy and return mock metrics."""
