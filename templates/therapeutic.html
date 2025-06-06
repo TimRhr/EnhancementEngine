@@ -60,21 +60,26 @@
     {% endif %}
 
     <form method="post">
-        <div class="mb-3">
-            <label for="gene" class="form-label">Gene Symbol</label>
-            <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required autocomplete="off">
-            <datalist id="gene-list"></datalist>
-            <div id="gene-message" class="form-text text-danger"></div>
-        </div>
-        <div class="mb-3">
-            <label for="variant" class="form-label">Variant</label>
-            <input list="variant-list" type="text" class="form-control" id="variant" name="variant" autocomplete="off">
-            <datalist id="variant-list"></datalist>
+        <div id="gene-variant-section" style="display:none;">
+            <div class="mb-3">
+                <label for="gene" class="form-label">Gene Symbol</label>
+                <input list="gene-list" type="text" class="form-control" id="gene" name="gene" required autocomplete="off">
+                <datalist id="gene-list"></datalist>
+                <div id="gene-message" class="form-text text-danger"></div>
+            </div>
+            <div class="mb-3">
+                <label for="variant" class="form-label">Variant</label>
+                <input list="variant-list" type="text" class="form-control" id="variant" name="variant" autocomplete="off">
+                <datalist id="variant-list"></datalist>
+            </div>
         </div>
         <div class="mb-3">
             <label for="disease" class="form-label">Disease</label>
             <input list="disease-list" class="form-control" id="disease" name="disease" value="rheumatoid_arthritis" autocomplete="off">
             <datalist id="disease-list"></datalist>
+            <button type="button" id="confirm-disease" class="btn btn-secondary mt-2">
+                Load Disease Info
+            </button>
         </div>
         <div class="mb-3">
             <label for="age" class="form-label">Patient Age</label>
@@ -164,26 +169,25 @@
     document.addEventListener('DOMContentLoaded', () => {
         const diseaseInput = document.getElementById('disease');
         const geneInput = document.getElementById('gene');
+        const geneVariantSection = document.getElementById('gene-variant-section');
+        const confirmBtn = document.getElementById('confirm-disease');
         updateDiseaseList('');
-        updateGeneList(diseaseInput.value);
+        if (geneVariantSection) geneVariantSection.style.display = 'none';
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => {
+                const disease = diseaseInput.value.trim();
+                if (disease) {
+                    updateGeneList(disease);
+                    geneVariantSection.style.display = 'block';
+                }
+            });
+        }
         diseaseInput.addEventListener('input', () => {
             clearTimeout(diseaseTimeout);
             diseaseTimeout = setTimeout(() => {
                 updateDiseaseList(diseaseInput.value);
             }, 100);
         });
-        diseaseInput.addEventListener('change', () => {
-            updateGeneList(diseaseInput.value);
-        });
-        diseaseInput.addEventListener('blur', () => {
-            updateGeneList(diseaseInput.value);
-        });
-        const form = diseaseInput.closest('form');
-        if (form) {
-            form.addEventListener('submit', () => {
-                updateGeneList(diseaseInput.value);
-            });
-        }
         geneInput.addEventListener('change', () => {
             updateVariantList(geneInput.value);
         });
