@@ -131,6 +131,15 @@ class DiseaseDatabaseClient:
                         normalized = name.strip().lower()
                         if normalized:
                             names.append(normalized)
+
+            unique: List[str] = []
+            seen: Set[str] = set()
+            for n in names:
+                if n not in seen:
+                    unique.append(n)
+                    seen.add(n)
+            names = unique
+
             self.cache.set(cache_key, names, "disease")
             return names
         except Exception as exc:
